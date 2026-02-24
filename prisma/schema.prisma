@@ -1,0 +1,332 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum LeadStage {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATING
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum LeadStatus {
+  ACTIVE
+  WON
+  LOST
+  ON_HOLD
+}
+
+enum ActivityType {
+  EMAIL_SENT
+  EMAIL_RECEIVED
+  CALL
+  MEETING
+  NOTE
+  TASK
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  NEGOTIATING
+}
+
+// Main Models
+model Lead {
+  id                  String      @id @default(cuid())
+  title               String
+  description         String?     @db.Text
+  
+  // Pipeline
+  stage               LeadStage   @default(NEW)
+  status              LeadStatus  @default(ACTIVE)
+  
+  // Value & Scoring
+  estimatedValue      Decimal?    @db.Decimal(12, 2)
+  closeProbability    Int?        @default(50)
+  leadScore           Int         @default(0)
+  
+  // Source tracking
+  source              String?
+  sourceDetails       Json?
+  
+  // Timeline
+  expectedCloseDate   DateTime?
+  firstContactDate    DateTime?
+  lastActivityDate    DateTime?
+  
+  // Loss tracking
+  lostReason          String?     @db.Text
+  
+  // Relations
+  companyId           String?
+  company             Company?    @relation(fields: [companyId], references: [id])
+  
+  activities          Activity[]
+  proposals           Proposal[]
+  tasks               Task[]
+  
+  // Metadata
+  tags                String[]
+  customFields        Json?
+  
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([stage])
+  @@index([status])
+  @@index([leadScore])
+  @@index([expectedCloseDate])
+  @@index([companyId])
+}
+
+model Company {
+  id                String      @id @default(cuid())
+  
+  // Basic info
+  name              String
+  website           String?
+  industry          String?
+  
+  // Size
+  employeeCount     String?
+  revenueRange      String?
+  
+  // Location
+  address           String?     @db.Text
+  city              String?
+  country           String?     @default("Sweden")
+  
+  // Enrichment
+  description       String?     @db.Text
+  linkedinUrl       String?
+  logoUrl           String?
+  
+  // Relations
+  leads             Lead[]
+  contacts          Contact[]
+  
+  // Metadata
+  tags              String[]
+  customFields      Json?
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([name])
+  @@index([industry])
+}
+
+model Contact {
+  id                  String      @id @default(cuid())
+  
+  // Basic info
+  firstName           String
+  lastName            String
+  email               String      @unique
+  phone               String?
+  title               String?
+  
+  // Social
+  linkedinUrl         String?
+  twitterHandle       String?
+  
+  // Enrichment
+  profilePictureUrl   String?
+  bio                 String?     @db.Text
+  
+  // Communication
+  preferredContactMethod String?  @default("email")
+  timezone            String?
+  
+  // Relationship
+  isDecisionMaker     Boolean     @default(false)
+  relationshipStrength Int?       @default(3)
+  
+  // Relations
+  companyId           String?
+  company             Company?    @relation(fields: [companyId], references: [id])
+  
+  activities          Activity[]
+  
+  // Metadata
+  tags                String[]
+  notes               String?     @db.Text
+  customFields        Json?
+  
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([email])
+  @@index([companyId])
+}
+
+model Activity {
+  id                String        @id @default(cuid())
+  
+  // Relations
+  leadId            String?
+  lead              Lead?         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  contactId         String?
+  contact           Contact?      @relation(fields: [contactId], references: [id])
+  
+  // Activity details
+  type              ActivityType
+  subject           String?
+  description       String        @db.Text
+  
+  // Email specific
+  emailThreadId     String?
+  emailMessageId    String?
+  
+  // Outcome
+  outcome           String?       // positive, neutral, negative, no_response
+  sentimentScore    Decimal?      @db.Decimal(3, 2)
+  
+  // Timeline
+  activityDate      DateTime
+  durationMinutes   Int?
+  
+  // Next action
+  nextAction        String?       @db.Text
+  nextActionDate    DateTime?
+  
+  // Metadata
+  attachments       Json?
+  metadata          Json?
+  
+  createdAt         DateTime      @default(now())
+
+  @@index([leadId])
+  @@index([contactId])
+  @@index([activityDate])
+  @@index([type])
+}
+
+model Proposal {
+  id                String          @id @default(cuid())
+  
+  // Relations
+  leadId            String
+  lead              Lead            @relation(fields: [leadId], references: [id])
+  
+  // Content
+  title             String
+  description       String?         @db.Text
+  
+  // Value
+  totalValue        Decimal         @db.Decimal(12, 2)
+  currency          String          @default("SEK")
+  
+  // Line items stored as JSON
+  lineItems         Json            // Array of {name, quantity, rate, total}
+  
+  // Timeline
+  estimatedDurationWeeks Int?
+  startDate         DateTime?
+  
+  // Status
+  status            ProposalStatus  @default(DRAFT)
+  
+  sentDate          DateTime?
+  viewedDate        DateTime?
+  acceptedDate      DateTime?
+  
+  // Versioning
+  versionNumber     Int             @default(1)
+  parentProposalId  String?
+  parentProposal    Proposal?       @relation("ProposalVersions", fields: [parentProposalId], references: [id])
+  versions          Proposal[]      @relation("ProposalVersions")
+  
+  // Files
+  pdfUrl            String?
+  
+  // Metadata
+  notes             String?         @db.Text
+  customFields      Json?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([leadId])
+  @@index([status])
+}
+
+model Task {
+  id                String      @id @default(cuid())
+  
+  // Relations
+  leadId            String?
+  lead              Lead?       @relation(fields: [leadId], references: [id])
+  
+  // Content
+  title             String
+  description       String?     @db.Text
+  
+  // Status
+  status            String      @default("todo") // todo, in_progress, done, cancelled
+  priority          String      @default("medium") // low, medium, high, urgent
+  
+  // Timeline
+  dueDate           DateTime?
+  completedDate     DateTime?
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([leadId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model EmailTemplate {
+  id                String      @id @default(cuid())
+  
+  name              String
+  category          String      // outreach, follow_up, proposal, negotiation, closing
+  
+  subject           String
+  body              String      @db.Text
+  
+  // Analytics
+  usageCount        Int         @default(0)
+  successRate       Decimal?    @db.Decimal(5, 2)
+  
+  isActive          Boolean     @default(true)
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+// Future: User model when you add team features
+model User {
+  id                String      @id @default(cuid())
+  
+  email             String      @unique
+  name              String?
+  
+  emailVerified     DateTime?
+  image             String?
+  
+  // Settings
+  preferences       Json?
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
