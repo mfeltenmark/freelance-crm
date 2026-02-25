@@ -1,17 +1,28 @@
 import { UpcomingBookings } from '@/components/dashboard/UpcomingBookings'
 import { TasksWidget } from '@/components/dashboard/TasksWidget'
+import { StatsCards } from '@/components/dashboard/StatsCards'
+import { RecentActivity } from '@/components/dashboard/RecentActivity'
+
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">CRM Dashboard</h1>
-        <p className="text-gray-600 mb-8">Välkommen till ditt Lead Management System</p>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <UpcomingBookings />
-          <TasksWidget />
-        </div>
+    <div className="space-y-6">
+      {/* Welcome section */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Välkommen tillbaka, Micky</h2>
+        <p className="text-gray-500 mt-1">Här är en överblick över din pipeline</p>
       </div>
+
+      {/* Stats row */}
+      <StatsCards />
+
+      {/* Main grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UpcomingBookings />
+        <TasksWidget />
+      </div>
+
+      {/* Activity feed */}
+      <RecentActivity />
     </div>
   )
 }
