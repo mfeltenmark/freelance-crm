@@ -1,15 +1,21 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '@/components/providers/QueryProvider'
-import { Sidebar } from '@/components/layout/Sidebar'
-import { Header } from '@/components/layout/Header'
+import { AuthProvider } from '@/components/providers/AuthProvider'
+import { AppShell } from '@/components/layout/AppShell'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Leads CRM | Tech & Change',
   description: 'Lead management för frilans konsulter',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({
@@ -20,23 +26,13 @@ export default function RootLayout({
   return (
     <html lang="sv">
       <body className={inter.className}>
-        <QueryProvider>
-          <div className="flex min-h-screen bg-gray-50">
-            {/* Sidebar */}
-            <Sidebar />
-            
-            {/* Main content area */}
-            <div className="flex-1 ml-64">
-              {/* Header */}
-              <Header />
-              
-              {/* Page content */}
-              <main className="p-6">
-                {children}
-              </main>
-            </div>
-          </div>
-        </QueryProvider>
+        <AuthProvider>
+          <QueryProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+          </QueryProvider>
+        </AuthProvider>
       </body>
     </html>
   )
