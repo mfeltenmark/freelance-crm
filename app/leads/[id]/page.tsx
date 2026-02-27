@@ -384,7 +384,6 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                   )}
                 </p>
               </div>
-            </div>
               <div>
                 <p className="text-sm text-gray-500">Betalning</p>
                 <button
