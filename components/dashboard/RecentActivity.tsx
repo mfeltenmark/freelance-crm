@@ -45,39 +45,9 @@ export function RecentActivity() {
   const { data, isLoading } = useQuery({
     queryKey: ['recent-activity'],
     queryFn: async () => {
-      // TODO: Replace with actual API call
-      return {
-        activities: [
-          {
-            id: '1',
-            type: 'meeting' as const,
-            description: 'Bokat möte med Erik Svensson',
-            leadTitle: 'Volvo Cars',
-            createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          },
-          {
-            id: '2',
-            type: 'lead_created' as const,
-            description: 'Ny lead skapad',
-            leadTitle: 'Spotify AB',
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-          },
-          {
-            id: '3',
-            type: 'task_completed' as const,
-            description: 'Task slutförd: Skicka offert',
-            leadTitle: 'H&M Digital',
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-          },
-          {
-            id: '4',
-            type: 'email' as const,
-            description: 'Email skickad till Anna Lindqvist',
-            leadTitle: 'Klarna',
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-          },
-        ],
-      }
+      const res = await fetch('/api/activities/recent')
+      if (!res.ok) throw new Error('Failed to fetch')
+      return res.json()
     },
   })
 
