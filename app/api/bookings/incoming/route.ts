@@ -151,6 +151,7 @@ async function processBooking(booking: BookingPayload) {
               eventType: booking.eventType,
             },
             estimatedValue: booking.eventType === 'workshop' ? 15000 : 5000,
+            isPaid: false,
             closeProbability: 50,
             leadScore: 60, // Booked meeting = warm lead
             firstContactDate: new Date(),

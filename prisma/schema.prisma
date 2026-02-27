@@ -81,6 +81,10 @@ model Lead {
   proposals           Proposal[]
   tasks               Task[]
   
+  // Payment
+  isPaid              Boolean     @default(false)
+  paymentNote         String?     @db.Text
+
   // Metadata
   tags                String[]
   customFields        Json?
