@@ -8,7 +8,7 @@ export default auth((req) => {
   const publicRoutes = ['/login']
   const isPublicRoute = publicRoutes.includes(pathname)
   const isAuthApi = pathname.startsWith('/api/auth')
-  const isWebhookApi = pathname.startsWith('/api/webhooks')
+  const isWebhookApi = pathname.startsWith('/api/webhooks') || pathname.startsWith('/api/bookings')
 
   if (isPublicRoute || isAuthApi || isWebhookApi) {
     if (isLoggedIn && pathname === '/login') {
