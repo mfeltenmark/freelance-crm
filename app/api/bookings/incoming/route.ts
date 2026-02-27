@@ -150,7 +150,7 @@ async function processBooking(booking: BookingPayload) {
               bookingId: booking.bookingId,
               eventType: booking.eventType,
             },
-            estimatedValue: booking.eventType === 'workshop' ? 15000 : 5000,
+            estimatedValue: booking.eventType.includes('workshop') ? 15000 : 5000,
             isPaid: false,
             closeProbability: 50,
             leadScore: 60, // Booked meeting = warm lead
@@ -233,7 +233,7 @@ async function createFollowUpTasks(
   const scheduledDate = new Date(booking.scheduledDate)
   const now = new Date()
   
-  if (booking.eventType === 'workshop') {
+  if (booking.eventType.includes('workshop')) {
     // Task 1: Send prep info 7 days before
     const prepInfoDate = new Date(scheduledDate)
     prepInfoDate.setDate(prepInfoDate.getDate() - 7)
