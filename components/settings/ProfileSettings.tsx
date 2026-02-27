@@ -1,16 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { User, Building2, Globe, Mail, Phone, Save, Camera } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { User, Globe, Phone, Save, Camera, Building2 } from 'lucide-react'
 
 export function ProfileSettings() {
+  const { data: session } = useSession()
   const [isSaving, setIsSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  
+  const [loaded, setLoaded] = useState(false)
+
   const [profile, setProfile] = useState({
-    firstName: 'Micky',
-    lastName: 'Feltenmark',
-    email: 'micky@techchange.io',
+    firstName: '',
+    lastName: '',
+    email: '',
     phone: '',
     company: 'Tech & Change by Feltenmark AB',
     orgNumber: '',
@@ -18,14 +21,60 @@ export function ProfileSettings() {
     timezone: 'Europe/Stockholm',
   })
 
+  // Load session data + saved preferences
+  useEffect(() => {
+    if (session?.user && !loaded) {
+      const nameParts = (session.user.name || '').split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      // Load saved preferences from API
+      fetch('/api/profile')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          setProfile(prev => ({
+            ...prev,
+            firstName,
+            lastName,
+            email: session.user?.email || '',
+            ...(data?.preferences || {}),
+          }))
+          setLoaded(true)
+        })
+        .catch(() => {
+          setProfile(prev => ({
+            ...prev,
+            firstName,
+            lastName,
+            email: session.user?.email || '',
+          }))
+          setLoaded(true)
+        })
+    }
+  }, [session, loaded])
+
   const handleSave = async () => {
     setIsSaving(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setIsSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    try {
+      await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: profile.phone,
+          company: profile.company,
+          orgNumber: profile.orgNumber,
+          website: profile.website,
+          timezone: profile.timezone,
+        }),
+      })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } finally {
+      setIsSaving(false)
+    }
   }
+
+  const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase() || 'MF'
 
   return (
     <div className="space-y-6">
@@ -37,20 +86,22 @@ export function ProfileSettings() {
         <div className="card-body">
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-2xl font-semibold">
-                MF
-              </div>
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50">
-                <Camera className="w-4 h-4 text-gray-600" />
-              </button>
+              {session?.user?.image ? (
+                <img
+                  src={session.user.image}
+                  alt={profile.firstName}
+                  className="w-24 h-24 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-2xl font-semibold">
+                  {initials}
+                </div>
+              )}
             </div>
             <div>
-              <p className="text-sm text-gray-600">
-                Ladda upp en profilbild. PNG eller JPG, max 2MB.
-              </p>
-              <button className="mt-2 text-sm text-brand-600 hover:text-brand-700 font-medium">
-                Ladda upp bild
-              </button>
+              <p className="font-medium text-gray-900">{profile.firstName} {profile.lastName}</p>
+              <p className="text-sm text-gray-500">{profile.email}</p>
+              <p className="text-xs text-gray-400 mt-1">Inloggad via Google</p>
             </div>
           </div>
         </div>
@@ -64,45 +115,39 @@ export function ProfileSettings() {
         <div className="card-body space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Förnamn
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Förnamn</label>
               <input
                 type="text"
                 value={profile.firstName}
-                onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                disabled
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
               />
+              <p className="text-xs text-gray-400 mt-1">Hämtas från Google</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Efternamn
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Efternamn</label>
               <input
                 type="text"
                 value={profile.lastName}
-                onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                disabled
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              E-post
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">E-post</label>
             <input
               type="email"
               value={profile.email}
-              onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+              disabled
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
             />
+            <p className="text-xs text-gray-400 mt-1">Hämtas från Google</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Telefon
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
             <input
               type="tel"
               value={profile.phone}
@@ -113,9 +158,7 @@ export function ProfileSettings() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tidszon
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tidszon</label>
             <select
               value={profile.timezone}
               onChange={(e) => setProfile({ ...profile, timezone: e.target.value })}
@@ -137,9 +180,7 @@ export function ProfileSettings() {
         </div>
         <div className="card-body space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Företagsnamn
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Företagsnamn</label>
             <input
               type="text"
               value={profile.company}
@@ -147,11 +188,8 @@ export function ProfileSettings() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Organisationsnummer
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Organisationsnummer</label>
             <input
               type="text"
               value={profile.orgNumber}
@@ -160,11 +198,8 @@ export function ProfileSettings() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Webbplats
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Webbplats</label>
             <input
               type="url"
               value={profile.website}
@@ -177,26 +212,17 @@ export function ProfileSettings() {
 
       {/* Save button */}
       <div className="flex justify-end">
-        <button 
+        <button
           onClick={handleSave}
           disabled={isSaving}
           className="btn-primary"
         >
           {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Sparar...
-            </>
+            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Sparar...</>
           ) : saved ? (
-            <>
-              <Save className="w-4 h-4" />
-              Sparat!
-            </>
+            <><Save className="w-4 h-4" />Sparat!</>
           ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Spara ändringar
-            </>
+            <><Save className="w-4 h-4" />Spara ändringar</>
           )}
         </button>
       </div>

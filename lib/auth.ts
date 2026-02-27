@@ -2,6 +2,8 @@ import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  session: { strategy: 'jwt' },
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -13,12 +15,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async signIn({ user }) {
-      // Optional: Restrict to specific emails
-      // const allowedEmails = ['micky@techchange.io']
-      // if (!allowedEmails.includes(user.email || '')) {
-      //   return false
-      // }
-      return true
+      const allowedEmails = [
+        'mikael@techchange.io',
+        'mfeltenmark@gmail.com'
+      ]
+      return allowedEmails.includes(user.email || '')
     },
   },
 })

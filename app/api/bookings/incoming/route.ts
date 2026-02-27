@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 const BookingSchema = z.object({
   bookingId: z.string(),
-  eventType: z.enum(['workshop', '30min-consultation']),
+  eventType: z.string(),
   name: z.string(),
   email: z.string().email(),
   phone: z.string().optional(),
