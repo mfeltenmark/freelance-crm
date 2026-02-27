@@ -385,6 +385,26 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 </p>
               </div>
             </div>
+              <div>
+                <p className="text-sm text-gray-500">Betalning</p>
+                <button
+                  onClick={() => {
+                    fetch(`/api/leads/${id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ isPaid: !lead.isPaid }),
+                    }).then(() => queryClient.invalidateQueries({ queryKey: ['lead', id] }))
+                  }}
+                  className={`mt-1 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    lead.isPaid
+                      ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {lead.isPaid ? '✓ Betald' : '○ Gratis'}
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Timeline */}
