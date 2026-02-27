@@ -239,14 +239,18 @@ async function createFollowUpTasks(
     prepInfoDate.setDate(prepInfoDate.getDate() - 7)
     prepInfoDate.setHours(9, 0, 0, 0) // 9am on that day
     
-    // Only create if it's in the future
-    if (prepInfoDate > now) {
-      tasks.push(
-        await tx.task.create({
-          data: {
-            leadId,
-            title: 'Send workshop preparation info',
-            description: `Send email to ${booking.email} with:
+    // If less than 7 days away, set to tomorrow 9am instead
+    if (prepInfoDate <= now) {
+      prepInfoDate.setTime(now.getTime())
+      prepInfoDate.setDate(prepInfoDate.getDate() + 1)
+      prepInfoDate.setHours(9, 0, 0, 0)
+    }
+    tasks.push(
+      await tx.task.create({
+        data: {
+          leadId,
+          title: 'Send workshop preparation info',
+          description: `Send email to ${booking.email} with:
 - Workshop agenda
 - Materials needed
 - Pre-work (if any)
@@ -254,13 +258,12 @@ async function createFollowUpTasks(
 - Contact info for questions
 
 Template: Use "Workshop Prep" email template`,
-            dueDate: prepInfoDate,
-            priority: 'high',
-            status: 'todo',
-          },
-        })
-      )
-    }
+          dueDate: prepInfoDate,
+          priority: 'high',
+          status: 'todo',
+        },
+      })
+    )
     
     // Task 2: Day before reminder
     const reminderDate = new Date(scheduledDate)
