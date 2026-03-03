@@ -1,7 +1,7 @@
 'use client'
 
-import { use } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { use, useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
   ArrowLeft,
   Building2, 
@@ -17,12 +17,17 @@ import {
   Calendar,
   Briefcase,
   Clock,
-  MapPin
+  MapPin,
+  Plus,
+  Check,
+  X
 } from 'lucide-react'
 import { format, formatDistance } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { AddActivityModal } from '@/components/contacts/AddActivityModal'
+import { LinkLeadModal } from '@/components/contacts/LinkLeadModal'
 
 interface ContactDetailProps {
   params: Promise<{ id: string }>
@@ -48,13 +53,46 @@ const stageConfig: Record<string, { label: string; color: string; bgColor: strin
 
 export default function ContactDetailPage({ params }: ContactDetailProps) {
   const { id } = use(params)
+  const queryClient = useQueryClient()
+  const [showActivityModal, setShowActivityModal] = useState(false)
+  const [showLeadModal, setShowLeadModal] = useState(false)
+  const [editingCompany, setEditingCompany] = useState(false)
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['contact', id],
     queryFn: async () => {
       const res = await fetch(`/api/contacts/${id}`)
       if (!res.ok) throw new Error('Failed to fetch contact')
       return res.json()
+    },
+  })
+
+  // Fetch companies for company selector
+  const { data: companiesData } = useQuery({
+    queryKey: ['companies-dropdown'],
+    queryFn: async () => {
+      const res = await fetch('/api/companies?limit=100')
+      if (!res.ok) return { companies: [] }
+      return res.json()
+    },
+    enabled: editingCompany,
+  })
+
+  // Update company mutation
+  const updateCompanyMutation = useMutation({
+    mutationFn: async (companyId: string | null) => {
+      const res = await fetch(`/api/contacts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId }),
+      })
+      if (!res.ok) throw new Error('Failed to update company')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact', id] })
+      setEditingCompany(false)
     },
   })
 
@@ -137,7 +175,7 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
             {contact.title && (
               <p className="text-gray-500 mt-1">{contact.title}</p>
             )}
-            {contact.company && (
+            {contact.company ? (
               <Link 
                 href={`/companies/${contact.company.id}`}
                 className="flex items-center gap-1 text-brand-600 hover:text-brand-700 mt-1"
@@ -145,6 +183,42 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
                 <Building2 className="w-4 h-4" />
                 {contact.company.name}
               </Link>
+            ) : !editingCompany ? (
+              <button
+                onClick={() => { setEditingCompany(true); setSelectedCompanyId('') }}
+                className="flex items-center gap-1 text-gray-400 hover:text-brand-600 mt-1 text-sm"
+              >
+                <Building2 className="w-4 h-4" />
+                + Lägg till företag
+              </button>
+            ) : null}
+            {editingCompany && (
+              <div className="flex items-center gap-2 mt-2">
+                <select
+                  value={selectedCompanyId}
+                  onChange={(e) => setSelectedCompanyId(e.target.value)}
+                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600"
+                  autoFocus
+                >
+                  <option value="">Välj företag...</option>
+                  {companiesData?.companies?.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => updateCompanyMutation.mutate(selectedCompanyId || null)}
+                  disabled={!selectedCompanyId}
+                  className="p-1 text-green-600 hover:text-green-700 disabled:text-gray-300"
+                >
+                  <Check className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setEditingCompany(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             )}
             {contact.isDecisionMaker && (
               <span className="inline-flex items-center gap-1 mt-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
@@ -156,6 +230,15 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          {contact.company && !editingCompany && (
+            <button 
+              onClick={() => { setEditingCompany(true); setSelectedCompanyId(contact.companyId || '') }}
+              className="btn-secondary text-xs"
+            >
+              <Building2 className="w-3 h-3" />
+              Byt företag
+            </button>
+          )}
           <button className="btn-secondary">
             <Edit2 className="w-4 h-4" />
             Redigera
@@ -192,12 +275,18 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
           )}
 
           {/* Related leads */}
-          {relatedLeads.length > 0 && (
-            <div className="card">
-              <div className="card-header">
-                <h3 className="font-semibold text-gray-900">Relaterade leads</h3>
-              </div>
-              <div className="card-body">
+          <div className="card">
+            <div className="card-header flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Relaterade leads</h3>
+              <button 
+                onClick={() => setShowLeadModal(true)}
+                className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+              >
+                + Lägg till
+              </button>
+            </div>
+            <div className="card-body">
+              {relatedLeads.length > 0 ? (
                 <div className="space-y-2">
                   {relatedLeads.map((lead: any) => {
                     const stage = stageConfig[lead.stage]
@@ -233,15 +322,20 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
                     )
                   })}
                 </div>
-              </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">Inga leads kopplade till denna kontakt</p>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Activities */}
           <div className="card">
             <div className="card-header flex items-center justify-between">
               <h3 className="font-semibold text-gray-900">Aktivitetshistorik</h3>
-              <button className="text-sm text-brand-600 hover:text-brand-700 font-medium">
+              <button 
+                onClick={() => setShowActivityModal(true)}
+                className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+              >
                 + Lägg till
               </button>
             </div>
@@ -419,6 +513,31 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      {showActivityModal && (
+        <AddActivityModal
+          contactId={id}
+          onClose={() => setShowActivityModal(false)}
+          onCreated={() => {
+            setShowActivityModal(false)
+            refetch()
+          }}
+        />
+      )}
+
+      {showLeadModal && (
+        <LinkLeadModal
+          contactId={id}
+          companyId={contact.companyId || null}
+          companyName={contact.company?.name || null}
+          onClose={() => setShowLeadModal(false)}
+          onCreated={() => {
+            setShowLeadModal(false)
+            refetch()
+          }}
+        />
+      )}
     </div>
   )
 }

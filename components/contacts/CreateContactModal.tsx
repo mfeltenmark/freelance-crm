@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { X, Star } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { X, Star, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface CreateContactModalProps {
@@ -12,6 +12,7 @@ interface CreateContactModalProps {
 }
 
 export function CreateContactModal({ onClose, onCreated, defaultCompanyId }: CreateContactModalProps) {
+  const queryClient = useQueryClient()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -24,9 +25,14 @@ export function CreateContactModal({ onClose, onCreated, defaultCompanyId }: Cre
     notes: '',
   })
   const [error, setError] = useState<string | null>(null)
+  const [showNewCompany, setShowNewCompany] = useState(false)
+  const [newCompanyName, setNewCompanyName] = useState('')
+  const [newCompanyWebsite, setNewCompanyWebsite] = useState('')
+  const [newCompanyIndustry, setNewCompanyIndustry] = useState('')
+  const [creatingCompany, setCreatingCompany] = useState(false)
 
   // Fetch companies for dropdown
-  const { data: companiesData } = useQuery({
+  const { data: companiesData, refetch: refetchCompanies } = useQuery({
     queryKey: ['companies-dropdown'],
     queryFn: async () => {
       const res = await fetch('/api/companies?limit=100')
@@ -34,6 +40,36 @@ export function CreateContactModal({ onClose, onCreated, defaultCompanyId }: Cre
       return res.json()
     },
   })
+
+  const handleCreateCompany = async () => {
+    if (!newCompanyName.trim()) return
+    setCreatingCompany(true)
+    try {
+      const res = await fetch('/api/companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCompanyName.trim(),
+          website: newCompanyWebsite.trim() || null,
+          industry: newCompanyIndustry.trim() || null,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to create company')
+      
+      // Set the new company as selected
+      setFormData({ ...formData, companyId: json.company.id })
+      setShowNewCompany(false)
+      setNewCompanyName('')
+      setNewCompanyWebsite('')
+      setNewCompanyIndustry('')
+      refetchCompanies()
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setCreatingCompany(false)
+    }
+  }
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -175,18 +211,74 @@ export function CreateContactModal({ onClose, onCreated, defaultCompanyId }: Cre
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Företag
               </label>
-              <select
-                value={formData.companyId}
-                onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-              >
-                <option value="">Inget företag</option>
-                {companiesData?.companies?.map((company: any) => (
-                  <option key={company.id} value={company.id}>
-                    {company.name}
-                  </option>
-                ))}
-              </select>
+              {!showNewCompany ? (
+                <div className="flex gap-2">
+                  <select
+                    value={formData.companyId}
+                    onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                  >
+                    <option value="">Inget företag</option>
+                    {companiesData?.companies?.map((company: any) => (
+                      <option key={company.id} value={company.id}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCompany(true)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center gap-1 text-sm whitespace-nowrap"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nytt
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2 p-3 border border-brand-200 rounded-lg bg-brand-50/30">
+                  <input
+                    type="text"
+                    value={newCompanyName}
+                    onChange={(e) => setNewCompanyName(e.target.value)}
+                    placeholder="Företagsnamn *"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
+                    autoFocus
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={newCompanyWebsite}
+                      onChange={(e) => setNewCompanyWebsite(e.target.value)}
+                      placeholder="Webbsida"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={newCompanyIndustry}
+                      onChange={(e) => setNewCompanyIndustry(e.target.value)}
+                      placeholder="Bransch"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => { setShowNewCompany(false); setNewCompanyName(''); }}
+                      className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      Avbryt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCreateCompany}
+                      disabled={!newCompanyName.trim() || creatingCompany}
+                      className="px-3 py-1.5 text-sm bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50"
+                    >
+                      {creatingCompany ? 'Skapar...' : 'Skapa företag'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* LinkedIn */}
