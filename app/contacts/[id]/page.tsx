@@ -28,6 +28,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { AddActivityModal } from '@/components/contacts/AddActivityModal'
 import { LinkLeadModal } from '@/components/contacts/LinkLeadModal'
+import { EditContactModal } from '@/components/contacts/EditContactModal'
 
 interface ContactDetailProps {
   params: Promise<{ id: string }>
@@ -56,6 +57,7 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
   const queryClient = useQueryClient()
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [showLeadModal, setShowLeadModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [editingCompany, setEditingCompany] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('')
 
@@ -239,7 +241,7 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
               Byt företag
             </button>
           )}
-          <button className="btn-secondary">
+          <button onClick={() => setShowEditModal(true)} className="btn-secondary">
             <Edit2 className="w-4 h-4" />
             Redigera
           </button>
@@ -534,6 +536,17 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
           onClose={() => setShowLeadModal(false)}
           onCreated={() => {
             setShowLeadModal(false)
+            refetch()
+          }}
+        />
+      )}
+
+      {showEditModal && (
+        <EditContactModal
+          contact={contact}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={() => {
+            setShowEditModal(false)
             refetch()
           }}
         />
