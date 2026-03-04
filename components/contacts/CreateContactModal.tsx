@@ -166,11 +166,10 @@ export function CreateContactModal({ onClose, onCreated, defaultCompanyId }: Cre
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                E-post *
+                E-post
               </label>
               <input
                 type="email"
-                required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="anna.svensson@foretag.se"
@@ -341,7 +340,7 @@ export function CreateContactModal({ onClose, onCreated, defaultCompanyId }: Cre
             </button>
             <button
               type="submit"
-              disabled={createMutation.isPending || !formData.firstName || !formData.lastName || !formData.email}
+              disabled={createMutation.isPending || !formData.firstName || !formData.lastName}
               className="btn-primary disabled:opacity-50"
             >
               {createMutation.isPending ? 'Sparar...' : 'Lägg till kontakt'}

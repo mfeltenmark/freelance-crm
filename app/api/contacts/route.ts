@@ -92,30 +92,32 @@ export async function POST(request: NextRequest) {
       tags,
     } = body
 
-    if (!firstName || !lastName || !email) {
+    if (!firstName || !lastName) {
       return NextResponse.json(
-        { error: 'First name, last name, and email are required' },
+        { error: 'First name and last name are required' },
         { status: 400 }
       )
     }
 
-    // Check if email already exists
-    const existing = await prisma.contact.findUnique({
-      where: { email },
-    })
-    
-    if (existing) {
-      return NextResponse.json(
-        { error: 'A contact with this email already exists' },
-        { status: 409 }
-      )
+    // Check if email already exists (only if email provided)
+    if (email) {
+      const existing = await prisma.contact.findFirst({
+        where: { email },
+      })
+      
+      if (existing) {
+        return NextResponse.json(
+          { error: 'A contact with this email already exists' },
+          { status: 409 }
+        )
+      }
     }
 
     const contact = await prisma.contact.create({
       data: {
         firstName,
         lastName,
-        email,
+        email: email || null,
         phone: phone || null,
         title: title || null,
         linkedinUrl: linkedinUrl || null,

@@ -25,6 +25,7 @@ import {
 import { format, formatDistance } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 interface LeadDetailProps {
@@ -55,7 +56,9 @@ const activityIcons: Record<string, typeof Mail> = {
 export default function LeadDetailPage({ params }: LeadDetailProps) {
   const { id } = use(params)
   const queryClient = useQueryClient()
+  const router = useRouter()
   const [showStageDropdown, setShowStageDropdown] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['lead', id],
@@ -94,6 +97,17 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lead', id] })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete lead')
+      return res.json()
+    },
+    onSuccess: () => {
+      router.push('/leads')
     },
   })
 
@@ -193,8 +207,12 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               </button>
             </>
           )}
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-            <MoreHorizontal className="w-5 h-5" />
+          <button 
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Ta bort lead"
+          >
+            <Trash2 className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -520,6 +538,29 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ta bort lead?</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Är du säker på att du vill ta bort &quot;{lead.title}&quot;? Alla kopplade aktiviteter och tasks tas också bort. Detta kan inte ångras.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary">Avbryt</button>
+              <button
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? 'Tar bort...' : 'Ta bort'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

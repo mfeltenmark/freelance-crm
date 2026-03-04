@@ -147,10 +147,9 @@ export function EditContactModal({ contact, onClose, onUpdated }: EditContactMod
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-post *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-post</label>
               <input
                 type="email"
-                required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
@@ -356,7 +355,7 @@ export function EditContactModal({ contact, onClose, onUpdated }: EditContactMod
             <button type="button" onClick={onClose} className="btn-secondary">Avbryt</button>
             <button
               type="submit"
-              disabled={updateMutation.isPending || !formData.firstName || !formData.lastName || !formData.email}
+              disabled={updateMutation.isPending || !formData.firstName || !formData.lastName}
               className="btn-primary disabled:opacity-50"
             >
               {updateMutation.isPending ? 'Sparar...' : 'Spara ändringar'}

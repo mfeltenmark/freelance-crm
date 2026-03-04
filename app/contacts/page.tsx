@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'next/navigation'
 import { 
   Search, 
   Plus, 
@@ -44,6 +45,15 @@ export default function ContactsPage() {
   const [search, setSearch] = useState('')
   const [decisionMakerFilter, setDecisionMakerFilter] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const searchParams = useSearchParams()
+
+  // Auto-open create modal from quick-add
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setShowCreateModal(true)
+      window.history.replaceState({}, '', '/contacts')
+    }
+  }, [searchParams])
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['contacts', search, decisionMakerFilter],
@@ -187,14 +197,16 @@ export default function ContactsPage() {
 
               {/* Contact methods */}
               <div className="flex items-center gap-3 mt-4 pt-3 border-t border-gray-100">
-                <a 
-                  href={`mailto:${contact.email}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-brand-600"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span className="truncate max-w-[120px]">{contact.email}</span>
-                </a>
+                {contact.email && (
+                  <a 
+                    href={`mailto:${contact.email}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-brand-600"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span className="truncate max-w-[120px]">{contact.email}</span>
+                  </a>
+                )}
                 
                 {contact.phone && (
                   <a 

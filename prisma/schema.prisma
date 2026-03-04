@@ -142,7 +142,7 @@ model Contact {
   // Basic info
   firstName           String
   lastName            String
-  email               String      @unique
+  email               String?
   phone               String?
   title               String?
   

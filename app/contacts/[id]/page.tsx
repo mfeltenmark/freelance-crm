@@ -25,6 +25,7 @@ import {
 import { format, formatDistance } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { AddActivityModal } from '@/components/contacts/AddActivityModal'
 import { LinkLeadModal } from '@/components/contacts/LinkLeadModal'
@@ -55,9 +56,11 @@ const stageConfig: Record<string, { label: string; color: string; bgColor: strin
 export default function ContactDetailPage({ params }: ContactDetailProps) {
   const { id } = use(params)
   const queryClient = useQueryClient()
+  const router = useRouter()
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [showLeadModal, setShowLeadModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editingCompany, setEditingCompany] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('')
 
@@ -95,6 +98,18 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', id] })
       setEditingCompany(false)
+    },
+  })
+
+  // Delete contact mutation
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete contact')
+      return res.json()
+    },
+    onSuccess: () => {
+      router.push('/contacts')
     },
   })
 
@@ -245,6 +260,12 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
             <Edit2 className="w-4 h-4" />
             Redigera
           </button>
+          <button 
+            onClick={() => setShowDeleteConfirm(true)} 
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -384,13 +405,15 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
               <h3 className="font-semibold text-gray-900">Kontaktuppgifter</h3>
             </div>
             <div className="card-body space-y-4">
-              <a 
-                href={`mailto:${contact.email}`}
-                className="flex items-center gap-3 text-gray-600 hover:text-brand-600"
-              >
-                <Mail className="w-5 h-5 text-gray-400" />
-                <span>{contact.email}</span>
-              </a>
+              {contact.email && (
+                <a 
+                  href={`mailto:${contact.email}`}
+                  className="flex items-center gap-3 text-gray-600 hover:text-brand-600"
+                >
+                  <Mail className="w-5 h-5 text-gray-400" />
+                  <span>{contact.email}</span>
+                </a>
+              )}
               
               {contact.phone && (
                 <a 
@@ -550,6 +573,28 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
             refetch()
           }}
         />
+      )}
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ta bort kontakt?</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Är du säker på att du vill ta bort {contact.firstName} {contact.lastName}? Detta kan inte ångras.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary">Avbryt</button>
+              <button
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? 'Tar bort...' : 'Ta bort'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

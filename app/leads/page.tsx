@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'next/navigation'
 import { 
   Search, 
   Plus, 
@@ -58,6 +59,14 @@ export default function LeadsPage() {
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setShowCreateModal(true)
+      window.history.replaceState({}, '', '/leads')
+    }
+  }, [searchParams])
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['leads', search, stageFilter],

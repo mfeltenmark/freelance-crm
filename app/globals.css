@@ -15,6 +15,11 @@
   }
 }
 
+/* Safe area for bottom nav on iPhone */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
 @layer components {
   .card {
     @apply bg-white rounded-xl border border-gray-100 transition-shadow;
@@ -26,6 +31,24 @@
 
   .card-body {
     @apply p-6;
+  }
+
+  /* Mobile-optimized card variants */
+  .card-header-mobile {
+    @apply px-4 py-3 border-b border-gray-100;
+  }
+
+  .card-body-mobile {
+    @apply p-4;
+  }
+
+  @media (max-width: 1023px) {
+    .card-header {
+      @apply px-4 py-3;
+    }
+    .card-body {
+      @apply p-4;
+    }
   }
 
   .btn-primary {

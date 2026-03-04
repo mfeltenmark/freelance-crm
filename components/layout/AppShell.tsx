@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Sidebar, MobileHeader } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
 
 // Pages that don't need the app shell (login, public pages)
 const publicPages = ['/login']
@@ -67,10 +68,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-6 pt-[72px] lg:pt-6">
+        <main className="flex-1 p-4 lg:p-6 pt-[72px] lg:pt-6 pb-20 lg:pb-6">
           {children}
         </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav />
     </div>
   )
 }

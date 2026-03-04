@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'next/navigation'
 import { 
   Plus, 
   Check, 
@@ -62,6 +63,14 @@ export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('todo')
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setShowCreateModal(true)
+      window.history.replaceState({}, '', '/tasks')
+    }
+  }, [searchParams])
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['tasks', statusFilter, priorityFilter, search],
