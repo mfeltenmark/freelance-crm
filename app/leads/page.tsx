@@ -110,7 +110,8 @@ export default function LeadsPage() {
       </div>
 
       {/* Pipeline overview */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="overflow-x-auto -mx-4 px-4 lg:mx-0 lg:px-0">
+        <div className="grid grid-cols-5 lg:grid-cols-7 gap-2 min-w-[500px] lg:min-w-0">
         {stages.slice(0, -2).map((stage) => {
           const stats = pipelineStats.find((s: any) => s.stage === stage)
           const config = stageConfig[stage]
@@ -139,6 +140,7 @@ export default function LeadsPage() {
             </button>
           )
         })}
+        </div>
       </div>
 
       {/* Filters & Search */}
@@ -164,133 +166,141 @@ export default function LeadsPage() {
         )}
       </div>
 
-      {/* Leads table */}
-      <div className="card overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
-                Lead
-              </th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
-                Steg
-              </th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
-                Värde
-              </th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
-                Sannolikhet
-              </th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
-                Förväntat avslut
-              </th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
-                Senaste aktivitet
-              </th>
-              <th className="w-10"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {isLoading ? (
-              [...Array(5)].map((_, i) => (
-                <tr key={i}>
-                  <td className="px-6 py-4" colSpan={7}>
-                    <div className="animate-pulse h-12 bg-gray-100 rounded" />
-                  </td>
-                </tr>
-              ))
-            ) : leads.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
-                  <div className="text-gray-400 mb-2">
-                    <Building2 className="w-12 h-12 mx-auto" />
-                  </div>
-                  <p className="text-gray-500 font-medium">Inga leads hittades</p>
-                  <p className="text-gray-400 text-sm mt-1">
-                    {search || stageFilter ? 'Prova att ändra dina filter' : 'Skapa din första lead för att komma igång'}
-                  </p>
-                </td>
-              </tr>
-            ) : (
-              leads.map((lead) => {
-                const stage = stageConfig[lead.stage]
-                
-                return (
-                  <tr 
-                    key={lead.id} 
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => window.location.href = `/leads/${lead.id}`}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {lead.company?.logoUrl ? (
-                          <img 
-                            src={lead.company.logoUrl} 
-                            alt="" 
-                            className="w-10 h-10 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <Building2 className="w-5 h-5 text-gray-400" />
-                          </div>
+      {/* Leads list */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="card p-4">
+              <div className="animate-pulse h-12 bg-gray-100 rounded" />
+            </div>
+          ))}
+        </div>
+      ) : leads.length === 0 ? (
+        <div className="card p-12 text-center">
+          <div className="text-gray-400 mb-2">
+            <Building2 className="w-12 h-12 mx-auto" />
+          </div>
+          <p className="text-gray-500 font-medium">Inga leads hittades</p>
+          <p className="text-gray-400 text-sm mt-1">
+            {search || stageFilter ? 'Prova att ändra dina filter' : 'Skapa din första lead för att komma igång'}
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Mobile: Card list */}
+          <div className="lg:hidden space-y-3">
+            {leads.map((lead) => {
+              const stage = stageConfig[lead.stage]
+              return (
+                <div
+                  key={lead.id}
+                  onClick={() => window.location.href = `/leads/${lead.id}`}
+                  className="card p-4 cursor-pointer hover:shadow-md transition-shadow active:bg-gray-50"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {lead.company?.logoUrl ? (
+                        <img src={lead.company.logoUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="font-medium text-gray-900 truncate">{lead.title}</div>
+                        {lead.company && (
+                          <div className="text-sm text-gray-500 truncate">{lead.company.name}</div>
                         )}
-                        <div>
-                          <div className="font-medium text-gray-900">{lead.title}</div>
-                          {lead.company && (
-                            <div className="text-sm text-gray-500">{lead.company.name}</div>
+                      </div>
+                    </div>
+                    <span className={cn(
+                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ml-2',
+                      stage.bgColor, stage.color
+                    )}>
+                      {stage.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 text-sm">
+                    <span className="font-medium text-gray-900">{formatCurrency(lead.estimatedValue)}</span>
+                    <div className="flex items-center gap-3 text-gray-500">
+                      <span>{lead.closeProbability || 0}%</span>
+                      {lead.expectedCloseDate && (
+                        <span>{format(new Date(lead.expectedCloseDate), 'd MMM', { locale: sv })}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Desktop: Table */}
+          <div className="hidden lg:block card overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Lead</th>
+                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Steg</th>
+                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Värde</th>
+                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Sannolikhet</th>
+                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Förväntat avslut</th>
+                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Senaste aktivitet</th>
+                  <th className="w-10"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {leads.map((lead) => {
+                  const stage = stageConfig[lead.stage]
+                  return (
+                    <tr 
+                      key={lead.id} 
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => window.location.href = `/leads/${lead.id}`}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {lead.company?.logoUrl ? (
+                            <img src={lead.company.logoUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                              <Building2 className="w-5 h-5 text-gray-400" />
+                            </div>
                           )}
+                          <div>
+                            <div className="font-medium text-gray-900">{lead.title}</div>
+                            {lead.company && <div className="text-sm text-gray-500">{lead.company.name}</div>}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                        stage.bgColor,
-                        stage.color
-                      )}>
-                        {stage.label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">
-                        {formatCurrency(lead.estimatedValue)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-brand-600 rounded-full"
-                            style={{ width: `${lead.closeProbability || 0}%` }}
-                          />
-                        </div>
-                        <span className="text-sm text-gray-600">
-                          {lead.closeProbability || 0}%
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', stage.bgColor, stage.color)}>
+                          {stage.label}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {lead.expectedCloseDate 
-                        ? format(new Date(lead.expectedCloseDate), 'd MMM yyyy', { locale: sv })
-                        : '-'
-                      }
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {lead.lastActivityDate 
-                        ? format(new Date(lead.lastActivityDate), 'd MMM', { locale: sv })
-                        : '-'
-                      }
-                    </td>
-                    <td className="px-6 py-4">
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
-                    </td>
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-900">{formatCurrency(lead.estimatedValue)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-brand-600 rounded-full" style={{ width: `${lead.closeProbability || 0}%` }} />
+                          </div>
+                          <span className="text-sm text-gray-600">{lead.closeProbability || 0}%</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {lead.expectedCloseDate ? format(new Date(lead.expectedCloseDate), 'd MMM yyyy', { locale: sv }) : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {lead.lastActivityDate ? format(new Date(lead.lastActivityDate), 'd MMM', { locale: sv }) : '-'}
+                      </td>
+                      <td className="px-6 py-4"><ChevronRight className="w-5 h-5 text-gray-400" /></td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {/* Create modal */}
       {showCreateModal && (
