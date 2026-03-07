@@ -59,6 +59,9 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const router = useRouter()
   const [showStageDropdown, setShowStageDropdown] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [editingNextStep, setEditingNextStep] = useState(false)
+  const [nextStepText, setNextStepText] = useState('')
+  const [nextStepDate, setNextStepDate] = useState('')
 
   const { data, isLoading } = useQuery({
     queryKey: ['lead', id],
@@ -259,6 +262,86 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           </div>
         </div>
       )}
+
+      {/* Next Step */}
+      <div className="card p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Nästa steg</div>
+            {editingNextStep ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={nextStepText}
+                  onChange={(e) => setNextStepText(e.target.value)}
+                  placeholder="T.ex. Väntar på besked om interim vs rekrytering"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                  autoFocus
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={nextStepDate}
+                    onChange={(e) => setNextStepDate(e.target.value)}
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                  />
+                  <div className="flex-1" />
+                  <button
+                    onClick={() => setEditingNextStep(false)}
+                    className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    Avbryt
+                  </button>
+                  <button
+                    onClick={() => {
+                      fetch(`/api/leads/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          nextStep: nextStepText, 
+                          nextStepDate: nextStepDate || null 
+                        }),
+                      }).then(() => {
+                        queryClient.invalidateQueries({ queryKey: ['lead', id] })
+                        setEditingNextStep(false)
+                      })
+                    }}
+                    className="px-3 py-1.5 text-sm bg-brand-600 text-white rounded-lg hover:bg-brand-700"
+                  >
+                    Spara
+                  </button>
+                </div>
+              </div>
+            ) : lead.nextStep ? (
+              <div 
+                onClick={() => { 
+                  setNextStepText(lead.nextStep || '')
+                  setNextStepDate(lead.nextStepDate ? lead.nextStepDate.split('T')[0] : '')
+                  setEditingNextStep(true) 
+                }}
+                className="cursor-pointer group"
+              >
+                <p className="text-gray-900 font-medium group-hover:text-brand-600 transition-colors">
+                  {lead.nextStep}
+                </p>
+                {lead.nextStepDate && (
+                  <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {format(new Date(lead.nextStepDate), 'd MMMM yyyy', { locale: sv })}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => { setNextStepText(''); setNextStepDate(''); setEditingNextStep(true) }}
+                className="text-sm text-gray-400 hover:text-brand-600 transition-colors"
+              >
+                + Sätt nästa steg...
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

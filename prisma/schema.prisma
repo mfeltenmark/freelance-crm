@@ -70,6 +70,10 @@ model Lead {
   firstContactDate    DateTime?
   lastActivityDate    DateTime?
   
+  // Next milestone
+  nextStep            String?     @db.Text
+  nextStepDate        DateTime?
+
   // Loss tracking
   lostReason          String?     @db.Text
   

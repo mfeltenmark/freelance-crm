@@ -1,6 +1,16 @@
 import { prisma } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': 'https://mikael.techchange.io',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const search = searchParams.get('search')
@@ -57,20 +67,20 @@ export async function GET(request: NextRequest) {
       prisma.contact.count({ where }),
     ])
 
-    return NextResponse.json({ 
-      contacts, 
+    return NextResponse.json({
+      contacts,
       total,
       pagination: {
         limit,
         offset,
         hasMore: offset + contacts.length < total,
       },
-    })
+    }, { headers: CORS_HEADERS })
   } catch (error) {
     console.error('Error fetching contacts:', error)
     return NextResponse.json(
       { error: 'Failed to fetch contacts' },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }
@@ -95,7 +105,7 @@ export async function POST(request: NextRequest) {
     if (!firstName || !lastName) {
       return NextResponse.json(
         { error: 'First name and last name are required' },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       )
     }
 
@@ -108,7 +118,7 @@ export async function POST(request: NextRequest) {
       if (existing) {
         return NextResponse.json(
           { error: 'A contact with this email already exists' },
-          { status: 409 }
+          { status: 409, headers: CORS_HEADERS }
         )
       }
     }
@@ -131,12 +141,12 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ contact }, { status: 201 })
+    return NextResponse.json({ contact }, { status: 201, headers: CORS_HEADERS })
   } catch (error) {
     console.error('Error creating contact:', error)
     return NextResponse.json(
       { error: 'Failed to create contact' },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }

@@ -30,6 +30,8 @@ interface Lead {
   source: string | null
   expectedCloseDate: string | null
   lastActivityDate: string | null
+  nextStep: string | null
+  nextStepDate: string | null
   company: {
     id: string
     name: string
@@ -229,6 +231,11 @@ export default function LeadsPage() {
                       )}
                     </div>
                   </div>
+                  {lead.nextStep && (
+                    <div className="mt-2 px-3 py-2 bg-brand-50 rounded-lg text-xs text-brand-700">
+                      <span className="font-medium">Nästa:</span> {lead.nextStep}
+                    </div>
+                  )}
                 </div>
               )
             })}
