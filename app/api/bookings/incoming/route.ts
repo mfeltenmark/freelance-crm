@@ -63,31 +63,38 @@ async function processBooking(booking: BookingPayload) {
     const [firstName, ...lastNameParts] = booking.name.split(' ')
     const lastName = lastNameParts.join(' ') || ''
     
-    const contact = await tx.contact.upsert({
-      where: { email: booking.email },
-      update: {
-        firstName,
-        lastName,
-        phone: booking.phone,
-        tags: {
-          set: Array.from(new Set([
-            ...(await tx.contact.findUnique({ 
-              where: { email: booking.email },
-              select: { tags: true },
-            }))?.tags || [],
-            'bookme',
-            booking.eventType,
-          ])),
-        },
-      },
-      create: {
-        firstName,
-        lastName,
-        email: booking.email,
-        phone: booking.phone,
-        tags: ['bookme', booking.eventType],
-      },
-    })
+    const contact = await (async () => {
+      const existing = await tx.contact.findFirst({
+        where: { email: booking.email },
+      })
+      if (existing) {
+        return await tx.contact.update({
+          where: { id: existing.id },
+          data: {
+            firstName,
+            lastName,
+            phone: booking.phone,
+            tags: {
+              set: Array.from(new Set([
+                ...existing.tags,
+                'bookme',
+                booking.eventType,
+              ])),
+            },
+          },
+        })
+      } else {
+        return await tx.contact.create({
+          data: {
+            firstName,
+            lastName,
+            email: booking.email,
+            phone: booking.phone,
+            tags: ['bookme', booking.eventType],
+          },
+        })
+      }
+    })()
     
     // 2. Find or create company (if provided)
     let companyId = null
