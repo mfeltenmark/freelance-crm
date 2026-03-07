@@ -53,7 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Render authenticated layout
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Mobile header */}
       <MobileHeader onMenuClick={() => setSidebarOpen(true)} />
 
@@ -61,14 +61,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 w-full lg:ml-64">
         {/* Desktop header */}
         <div className="hidden lg:block">
           <Header />
         </div>
         
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-6 pt-[72px] lg:pt-6 pb-20 lg:pb-6 overflow-x-hidden">
+        <main className="flex-1 p-4 lg:p-6 pt-[72px] lg:pt-6 pb-20 lg:pb-6 overflow-x-hidden min-w-0">
           {children}
         </main>
       </div>
