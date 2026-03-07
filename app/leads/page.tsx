@@ -99,21 +99,21 @@ export default function LeadsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Leads</h2>
-          <p className="text-gray-500 mt-1">Hantera din försäljningspipeline</p>
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-900">Leads</h2>
+          <p className="text-gray-500 mt-1 hidden lg:block">Hantera din försäljningspipeline</p>
         </div>
         <button 
           onClick={() => setShowCreateModal(true)}
           className="btn-primary"
         >
           <Plus className="w-4 h-4" />
-          Ny lead
+          <span className="hidden sm:inline">Ny lead</span>
         </button>
       </div>
 
-      {/* Pipeline overview */}
-      <div className="overflow-x-auto -mx-4 px-4 lg:mx-0 lg:px-0">
-        <div className="grid grid-cols-5 lg:grid-cols-7 gap-2 min-w-[500px] lg:min-w-0">
+      {/* Pipeline overview - desktop only */}
+      <div className="hidden lg:block">
+        <div className="grid grid-cols-7 gap-2">
         {stages.slice(0, -2).map((stage) => {
           const stats = pipelineStats.find((s: any) => s.stage === stage)
           const config = stageConfig[stage]
@@ -145,8 +145,38 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {/* Filters & Search */}
-      <div className="flex items-center gap-4">
+      {/* Mobile: stage filter chips */}
+      <div className="lg:hidden flex gap-2 overflow-x-auto -mx-4 px-4 pb-1">
+        <button
+          onClick={() => setStageFilter(null)}
+          className={cn(
+            'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all',
+            !stageFilter ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200'
+          )}
+        >
+          Alla ({leads.length})
+        </button>
+        {stages.slice(0, -2).map((stage) => {
+          const config = stageConfig[stage]
+          const count = pipelineStats.find((s: any) => s.stage === stage)?._count || 0
+          if (count === 0) return null
+          return (
+            <button
+              key={stage}
+              onClick={() => setStageFilter(stageFilter === stage ? null : stage)}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all',
+                stageFilter === stage ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200'
+              )}
+            >
+              {config.label} ({count})
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Search - desktop always visible, mobile hidden */}
+      <div className="hidden lg:flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -190,50 +220,51 @@ export default function LeadsPage() {
       ) : (
         <>
           {/* Mobile: Card list */}
-          <div className="lg:hidden space-y-3">
+          <div className="lg:hidden space-y-2">
             {leads.map((lead) => {
               const stage = stageConfig[lead.stage]
+              const hasValue = lead.estimatedValue && parseFloat(lead.estimatedValue) > 0
               return (
                 <div
                   key={lead.id}
                   onClick={() => window.location.href = `/leads/${lead.id}`}
-                  className="card p-4 cursor-pointer hover:shadow-md transition-shadow active:bg-gray-50"
+                  className="card p-3 cursor-pointer active:bg-gray-50 transition-colors"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {lead.company?.logoUrl ? (
-                        <img src={lead.company.logoUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-5 h-5 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="font-medium text-gray-900 truncate">{lead.title}</div>
+                  <div className="flex items-center gap-3">
+                    {lead.company?.logoUrl ? (
+                      <img src={lead.company.logoUrl} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm text-gray-900 truncate">{lead.title}</div>
+                      <div className="flex items-center gap-2 mt-0.5">
                         {lead.company && (
-                          <div className="text-sm text-gray-500 truncate">{lead.company.name}</div>
+                          <span className="text-xs text-gray-500 truncate">{lead.company.name}</span>
                         )}
                       </div>
                     </div>
-                    <span className={cn(
-                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ml-2',
-                      stage.bgColor, stage.color
-                    )}>
-                      {stage.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 text-sm">
-                    <span className="font-medium text-gray-900">{formatCurrency(lead.estimatedValue)}</span>
-                    <div className="flex items-center gap-3 text-gray-500">
-                      <span>{lead.closeProbability || 0}%</span>
-                      {lead.expectedCloseDate && (
-                        <span>{format(new Date(lead.expectedCloseDate), 'd MMM', { locale: sv })}</span>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <span className={cn(
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
+                        stage.bgColor, stage.color
+                      )}>
+                        {stage.label}
+                      </span>
+                      {hasValue && (
+                        <span className="text-xs font-medium text-gray-700">{formatCurrency(lead.estimatedValue)}</span>
                       )}
                     </div>
                   </div>
                   {lead.nextStep && (
-                    <div className="mt-2 px-3 py-2 bg-brand-50 rounded-lg text-xs text-brand-700">
-                      <span className="font-medium">Nästa:</span> {lead.nextStep}
+                    <div className="mt-2 px-2.5 py-1.5 bg-brand-50 rounded-md text-xs text-brand-700 flex items-center gap-1">
+                      <span className="font-medium">Nästa:</span>
+                      <span className="truncate">{lead.nextStep}</span>
+                      {lead.nextStepDate && (
+                        <span className="text-brand-500 flex-shrink-0 ml-auto">{format(new Date(lead.nextStepDate), 'd MMM', { locale: sv })}</span>
+                      )}
                     </div>
                   )}
                 </div>
