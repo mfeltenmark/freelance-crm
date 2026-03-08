@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     
     // Filters
     const stage = searchParams.get('stage') as LeadStage | null
-    const status = searchParams.get('status') as LeadStatus | null
+    const status = searchParams.get('status')
     const search = searchParams.get('search')
     const sortBy = searchParams.get('sortBy') || 'updatedAt'
     const sortOrder = searchParams.get('sortOrder') || 'desc'
