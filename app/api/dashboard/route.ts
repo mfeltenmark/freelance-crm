@@ -17,8 +17,13 @@ export async function GET() {
       overdueTaskCount,
       todayTaskCount,
     ] = await Promise.all([
-      // Active leads count
-      prisma.lead.count({ where: { status: 'ACTIVE' } }),
+      // Active leads count (not closed)
+      prisma.lead.count({ 
+        where: { 
+          status: 'ACTIVE',
+          stage: { notIn: ['CLOSED_WON', 'CLOSED_LOST'] },
+        } 
+      }),
 
       // Total leads
       prisma.lead.count(),
@@ -38,9 +43,12 @@ export async function GET() {
         },
       }),
 
-      // Pipeline value (active leads)
+      // Pipeline value (active leads, not closed)
       prisma.lead.aggregate({
-        where: { status: 'ACTIVE' },
+        where: { 
+          status: 'ACTIVE',
+          stage: { notIn: ['CLOSED_WON', 'CLOSED_LOST'] },
+        },
         _sum: { estimatedValue: true },
       }),
 

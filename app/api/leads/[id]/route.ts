@@ -83,7 +83,13 @@ export async function PATCH(
     
     if (title !== undefined) updateData.title = title
     if (description !== undefined) updateData.description = description
-    if (stage !== undefined) updateData.stage = stage
+    if (stage !== undefined) {
+      updateData.stage = stage
+      // Auto-sync status when stage changes
+      if (stage === 'CLOSED_WON') updateData.status = 'WON'
+      if (stage === 'CLOSED_LOST') updateData.status = 'LOST'
+      if (['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATING'].includes(stage)) updateData.status = 'ACTIVE'
+    }
     if (status !== undefined) updateData.status = status
     if (estimatedValue !== undefined) updateData.estimatedValue = estimatedValue ? parseFloat(estimatedValue) : null
     if (closeProbability !== undefined) updateData.closeProbability = closeProbability
