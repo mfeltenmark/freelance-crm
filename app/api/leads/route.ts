@@ -23,9 +23,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (status) {
-      if (status === 'ALL') {
-        // No filter - show everything
-      } else {
+      if (status !== 'ALL') {
         where.status = status
       }
     } else {
