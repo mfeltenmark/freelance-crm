@@ -61,6 +61,7 @@ export default function LeadsPage() {
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showClosed, setShowClosed] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -71,11 +72,12 @@ export default function LeadsPage() {
   }, [searchParams])
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['leads', search, stageFilter],
+    queryKey: ['leads', search, stageFilter, showClosed],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (stageFilter) params.set('stage', stageFilter)
+      if (showClosed) params.set('status', 'ALL')
       
       const res = await fetch(`/api/leads?${params}`)
       if (!res.ok) throw new Error('Failed to fetch leads')
@@ -173,6 +175,15 @@ export default function LeadsPage() {
             </button>
           )
         })}
+        <button
+          onClick={() => setShowClosed(!showClosed)}
+          className={cn(
+            'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all',
+            showClosed ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-400 border-gray-200'
+          )}
+        >
+          {showClosed ? 'Dölja avslutade' : 'Visa avslutade'}
+        </button>
       </div>
 
       {/* Search - desktop always visible, mobile hidden */}
@@ -188,6 +199,16 @@ export default function LeadsPage() {
           />
         </div>
         
+        <button
+          onClick={() => setShowClosed(!showClosed)}
+          className={cn(
+            'text-sm font-medium transition-colors',
+            showClosed ? 'text-brand-600' : 'text-gray-400 hover:text-gray-600'
+          )}
+        >
+          {showClosed ? '✓ Visar avslutade' : 'Visa avslutade'}
+        </button>
+
         {stageFilter && (
           <button
             onClick={() => setStageFilter(null)}

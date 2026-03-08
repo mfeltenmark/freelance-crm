@@ -23,10 +23,14 @@ export async function GET(request: NextRequest) {
     }
     
     if (status) {
-      where.status = status
+      if (status === 'ALL') {
+        // No filter - show everything
+      } else {
+        where.status = status
+      }
     } else {
-      // Default: show active leads
-      where.status = { not: 'ON_HOLD' }
+      // Default: show only active leads
+      where.status = 'ACTIVE'
     }
     
     if (search) {
