@@ -193,7 +193,7 @@ async function processBooking(booking: BookingPayload) {
     const [firstName, ...lastNameParts] = booking.name.split(' ')
     const lastName = lastNameParts.join(' ') || ''
 
-    const existingContact = await tx.contact.findUnique({
+    const existingContact = await tx.contact.findFirst({
       where: { email: booking.email },
     })
 
