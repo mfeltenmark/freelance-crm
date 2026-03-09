@@ -277,7 +277,7 @@ async function processBooking(booking: BookingPayload) {
             status: 'ACTIVE',
             source: 'WEBSITE',
             leadScore: 50,
-            contactId: contact.id,
+            contact: { connect: { id: contact.id } },
             companyId: companyId,
             lastActivityDate: new Date(),
             nextStep: `Prepare for ${booking.eventType}`,
@@ -294,7 +294,7 @@ async function processBooking(booking: BookingPayload) {
         activityDate: new Date(booking.scheduledDate),
         durationMinutes: booking.duration,
         leadId: lead.id,
-        contactId: contact.id,
+        contact: { connect: { id: contact.id } },
         metadata: {
           bookingId: booking.bookingId,
           meetingUrl: booking.meetingUrl,
