@@ -277,6 +277,7 @@ async function processBooking(booking: BookingPayload) {
             status: 'ACTIVE',
             source: 'WEBSITE',
             leadScore: 50,
+            contactId: contact.id,
             companyId: companyId,
             lastActivityDate: new Date(),
             nextStep: `Prepare for ${booking.eventType}`,

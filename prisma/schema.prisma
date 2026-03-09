@@ -78,6 +78,9 @@ model Lead {
   lostReason          String?     @db.Text
   
   // Relations
+  contactId           String?
+  contact             Contact?    @relation(fields: [contactId], references: [id])
+
   companyId           String?
   company             Company?    @relation(fields: [companyId], references: [id])
   
@@ -101,6 +104,7 @@ model Lead {
   @@index([leadScore])
   @@index([expectedCloseDate])
   @@index([companyId])
+  @@index([contactId])
 }
 
 model Company {
@@ -170,6 +174,7 @@ model Contact {
   companyId           String?
   company             Company?    @relation(fields: [companyId], references: [id])
   
+  leads               Lead[]
   activities          Activity[]
   
   // Metadata
