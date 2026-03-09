@@ -194,7 +194,7 @@ async function processBooking(booking: BookingPayload) {
     const lastName = lastNameParts.join(' ') || ''
 
     const existingContact = await tx.contact.findFirst({
-      where: { id: existingContact.id },
+      where: { email: booking.email },
     })
 
     const contact = existingContact
