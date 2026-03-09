@@ -288,7 +288,7 @@ async function processBooking(booking: BookingPayload) {
     // 4. Create activity
     const activity = await tx.activity.create({
       data: {
-        type: 'meeting',
+        type: 'MEETING',
         description: `${booking.eventType} - Scheduled via BookMe`,
         activityDate: new Date(booking.scheduledDate),
         durationMinutes: booking.duration,
