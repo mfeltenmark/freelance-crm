@@ -249,9 +249,10 @@ async function processBooking(booking: BookingPayload) {
     }
 
     // 3. Create or update lead
+    const bookingDate = new Date(booking.scheduledDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
     const leadTitle = booking.company
-      ? `${booking.eventType} - ${booking.company}`
-      : `${booking.eventType} - ${firstName} ${lastName}`
+      ? `${booking.eventType} - ${booking.company} (${bookingDate})`
+      : `${booking.eventType} - ${firstName} ${lastName} (${bookingDate})`
 
     const existingLead = await tx.lead.findFirst({
       where: {
