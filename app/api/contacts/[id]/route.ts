@@ -26,21 +26,23 @@ export async function GET(
       )
     }
 
-    // Also fetch leads associated with this contact's company
-    let relatedLeads: any[] = []
-    if (contact.companyId) {
-      relatedLeads = await prisma.lead.findMany({
-        where: { companyId: contact.companyId },
-        select: {
-          id: true,
-          title: true,
-          stage: true,
-          status: true,
-          estimatedValue: true,
-        },
-        take: 10,
-      })
-    }
+    // Fetch leads associated with this contact directly or via company
+    const relatedLeads = await prisma.lead.findMany({
+      where: {
+        OR: [
+          { contactId: id },
+          ...(contact.companyId ? [{ companyId: contact.companyId }] : []),
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        stage: true,
+        status: true,
+        estimatedValue: true,
+      },
+      take: 10,
+    })
 
     return NextResponse.json({ contact, relatedLeads })
   } catch (error) {
