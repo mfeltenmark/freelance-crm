@@ -130,7 +130,7 @@ async function processBooking(booking: BookingPayload) {
         leadId: lead.id,
         contactId: contact.id,
         subject: `${eventTypeName}${booking.variant ? ` (${booking.variant})` : ''}`,
-        activityType: 'meeting',
+        type: 'MEETING',
         activityDate: new Date(booking.scheduledDate),
         outcome: 'positive',
         description: [
