@@ -70,7 +70,8 @@ async function processBooking(booking: BookingPayload) {
     if (!contact) {
       contact = await tx.contact.create({
         data: {
-          name: booking.name,
+          firstName: booking.name.split(" ")[0],
+          lastName: booking.name.split(" ").slice(1).join(" ") || "-",
           email: booking.email,
           phone: booking.phone ?? null,
           tags: ['bookme'],
@@ -80,7 +81,8 @@ async function processBooking(booking: BookingPayload) {
       contact = await tx.contact.update({
         where: { id: contact.id },
         data: {
-          name: booking.name,
+          firstName: booking.name.split(" ")[0],
+          lastName: booking.name.split(" ").slice(1).join(" ") || "-",
           ...(booking.phone ? { phone: booking.phone } : {}),
         },
       })
