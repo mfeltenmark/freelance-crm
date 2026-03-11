@@ -112,7 +112,7 @@ async function processBooking(booking: BookingPayload) {
         stage: 'CONTACTED',
         contactId: contact.id,
         companyId: companyId,
-        notes: [
+        description: [
           booking.notes ?? '',
           `Source: ${booking.source}`,
           booking.variant ? `Variant: ${booking.variant}` : '',
