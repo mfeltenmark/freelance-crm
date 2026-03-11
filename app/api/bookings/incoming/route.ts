@@ -1,8 +1,4 @@
 // app/api/bookings/incoming/route.ts  (freelance-crm project)
-// Replace existing file. Key changes:
-//   - Schema accepts variant and campaign (both optional, nullable)
-//   - source uses the value from the payload (no longer z.literal('bookme'))
-//   - All three tracking fields stored on the lead and activity records
 
 import { prisma } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
@@ -13,10 +9,7 @@ const BookingSchema = z.object({
   eventTypeId: z.string().optional(),
   eventTypeName: z.string().optional(),
   eventTypeSlug: z.string().optional(),
-
-  // Legacy field kept for backward compat
   eventType: z.string().optional(),
-
   name: z.string(),
   email: z.string().email(),
   phone: z.string().nullable().optional(),
@@ -27,16 +20,12 @@ const BookingSchema = z.object({
     question_label: z.string(),
     answer: z.string(),
   })).optional().default([]),
-
   scheduledDate: z.string(),
   duration: z.number().optional(),
   meetingUrl: z.string().nullable().optional(),
-
-  // Tracking – no longer literal('bookme'), accepts any string
   source: z.string().default('bookme'),
   variant: z.string().nullable().optional().default(null),
   campaign: z.string().nullable().optional().default(null),
-
   createdAt: z.string().optional(),
 })
 
@@ -73,24 +62,29 @@ export async function POST(request: NextRequest) {
 }
 
 async function processBooking(booking: BookingPayload) {
-  // Resolve a human-readable event type name (prefer new field, fall back to legacy)
   const eventTypeName = booking.eventTypeName ?? booking.eventType ?? 'Consultation'
 
   return await prisma.$transaction(async (tx) => {
-    // 1. Upsert contact
-    const contact = await tx.contact.upsert({
-      where: { email: booking.email },
-      update: {
-        name: booking.name,
-        ...(booking.phone ? { phone: booking.phone } : {}),
-      },
-      create: {
-        name: booking.name,
-        email: booking.email,
-        phone: booking.phone ?? null,
-        tags: ['bookme'],
-      },
-    })
+    // 1. Find or create contact (no upsert – email is not a unique key in Prisma schema)
+    let contact = await tx.contact.findFirst({ where: { email: booking.email } })
+    if (!contact) {
+      contact = await tx.contact.create({
+        data: {
+          name: booking.name,
+          email: booking.email,
+          phone: booking.phone ?? null,
+          tags: ['bookme'],
+        },
+      })
+    } else {
+      contact = await tx.contact.update({
+        where: { id: contact.id },
+        data: {
+          name: booking.name,
+          ...(booking.phone ? { phone: booking.phone } : {}),
+        },
+      })
+    }
 
     // 2. Find or create company
     let companyId: string | null = null
@@ -104,8 +98,6 @@ async function processBooking(booking: BookingPayload) {
       companyId = company.id
     }
 
-    // Build a source label for the lead title so it's obvious where it came from
-    // e.g. "Backlog Audit – Priority Barbershop" vs "30-min Consultation – bookme"
     const sourceLabel = booking.variant
       ? booking.variant.replace(/-/g, ' ')
       : booking.source
@@ -120,20 +112,17 @@ async function processBooking(booking: BookingPayload) {
         companyId: companyId,
         notes: [
           booking.notes ?? '',
-          // Append tracking info so it's visible in CRM notes
           `Source: ${booking.source}`,
           booking.variant ? `Variant: ${booking.variant}` : '',
           booking.campaign ? `Campaign: ${booking.campaign}` : '',
           booking.answers && booking.answers.length > 0
             ? '\nIntake answers:\n' + booking.answers.map((a) => `- ${a.question_label}: ${a.answer}`).join('\n')
             : '',
-        ]
-          .filter(Boolean)
-          .join('\n'),
+        ].filter(Boolean).join('\n'),
       },
     })
 
-    // 4. Create activity (the actual booking/meeting)
+    // 4. Create activity
     const activity = await tx.activity.create({
       data: {
         leadId: lead.id,
@@ -148,13 +137,11 @@ async function processBooking(booking: BookingPayload) {
           booking.campaign ? `Campaign: ${booking.campaign}` : '',
           booking.meetingUrl ? `Meet: ${booking.meetingUrl}` : '',
           booking.notes ? `Notes: ${booking.notes}` : '',
-        ]
-          .filter(Boolean)
-          .join('\n'),
+        ].filter(Boolean).join('\n'),
       },
     })
 
-    // 5. Auto-create follow-up task (day after meeting)
+    // 5. Follow-up task
     const followUpDate = new Date(booking.scheduledDate)
     followUpDate.setDate(followUpDate.getDate() + 1)
     followUpDate.setHours(9, 0, 0, 0)
