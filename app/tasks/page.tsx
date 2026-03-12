@@ -320,13 +320,18 @@ export default function TasksPage() {
                     {/* Meta info */}
                     <div className="flex items-center gap-4 mt-2">
                       {task.lead && (
-                        <a 
+                        <a
                           href={`/leads/${task.lead.id}`}
                           className="text-xs text-brand-600 hover:text-brand-700 font-medium"
                         >
                           {task.lead.title}
                           {task.lead.company && ` · ${task.lead.company.name}`}
                         </a>
+                      )}
+                      {task.lead?.contact && (
+                        <span className="text-xs text-gray-500">
+                          {task.lead.contact.firstName} {task.lead.contact.lastName}
+                        </span>
                       )}
 
                       {dueDate && (

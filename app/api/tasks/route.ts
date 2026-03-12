@@ -57,6 +57,12 @@ export async function GET(request: NextRequest) {
                   name: true,
                 },
               },
+              contact: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
             },
           },
         },

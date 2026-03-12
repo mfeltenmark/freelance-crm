@@ -129,7 +129,7 @@ async function processBooking(booking: BookingPayload) {
       data: {
         leadId: lead.id,
         contactId: contact.id,
-        subject: `${eventTypeName}${booking.variant ? ` (${booking.variant})` : ''}`,
+        subject: `${eventTypeName} med ${booking.name}`,
         type: 'MEETING',
         activityDate: new Date(booking.scheduledDate),
         outcome: 'positive',
@@ -151,8 +151,8 @@ async function processBooking(booking: BookingPayload) {
     const task = await tx.task.create({
       data: {
         leadId: lead.id,
-        title: `Follow-up: ${eventTypeName}`,
-        description: `Send follow-up after ${eventTypeName} meeting`,
+        title: `Follow-up: ${eventTypeName} med ${booking.name}`,
+        description: `Send follow-up after ${eventTypeName} meeting with ${booking.name}`,
         status: 'todo',
         priority: 'high',
         dueDate: followUpDate,

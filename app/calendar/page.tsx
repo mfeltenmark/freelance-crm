@@ -332,6 +332,11 @@ export default function CalendarPage() {
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {event.subject || event.type}
                       </p>
+                      {event.contact && (
+                        <p className="text-xs text-gray-600 truncate">
+                          {event.contact.firstName} {event.contact.lastName}
+                        </p>
+                      )}
                       <p className="text-xs text-gray-500">
                         {format(parseISO(event.activityDate), 'EEE d MMM, HH:mm', { locale: sv })}
                       </p>
