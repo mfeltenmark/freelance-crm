@@ -51,6 +51,12 @@ export async function GET(request: NextRequest) {
               logoUrl: true,
             },
           },
+          contact: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
           _count: {
             select: {
               activities: true,

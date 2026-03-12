@@ -22,6 +22,10 @@ import { CreateLeadModal } from '@/components/leads/CreateLeadModal'
 interface Lead {
   id: string
   title: string
+  contact?: {
+    firstName: string
+    lastName: string
+  }
   description: string | null
   stage: string
   status: string
@@ -261,6 +265,11 @@ export default function LeadsPage() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm text-gray-900 truncate">{lead.title}</div>
+                      {lead.contact && (
+                        <div className="text-xs text-gray-500 truncate">
+                          {lead.contact.firstName} {lead.contact.lastName}
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mt-0.5">
                         {lead.company && (
                           <span className="text-xs text-gray-500 truncate">{lead.company.name}</span>
@@ -327,6 +336,11 @@ export default function LeadsPage() {
                           )}
                           <div>
                             <div className="font-medium text-gray-900">{lead.title}</div>
+                            {lead.contact && (
+                              <div className="text-xs text-gray-500">
+                                {lead.contact.firstName} {lead.contact.lastName}
+                              </div>
+                            )}
                             {lead.company && <div className="text-sm text-gray-500">{lead.company.name}</div>}
                           </div>
                         </div>
