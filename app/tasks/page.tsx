@@ -37,6 +37,10 @@ interface Task {
     company?: {
       name: string
     }
+    contact?: {
+      firstName: string
+      lastName: string
+    }
   } | null
   createdAt: string
 }
