@@ -163,7 +163,7 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-4">
           {/* Avatar */}
           <div className="relative">
@@ -246,7 +246,7 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {contact.company && !editingCompany && (
             <button 
               onClick={() => { setEditingCompany(true); setSelectedCompanyId(contact.companyId || '') }}

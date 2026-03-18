@@ -160,7 +160,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-4">
           {lead.company?.logoUrl ? (
             <img 
@@ -195,7 +195,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {lead.status === 'ACTIVE' && (
             <>
               <button
