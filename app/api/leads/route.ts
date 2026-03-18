@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
         description,
         stage,
         estimatedValue: estimatedValue ? parseFloat(estimatedValue) : null,
-        closeProbability: closeProbability || 50,
+        closeProbability: closeProbability ? parseInt(closeProbability, 10) : null,
         source,
         expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate) : null,
         companyId,
