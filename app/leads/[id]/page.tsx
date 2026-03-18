@@ -59,6 +59,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const router = useRouter()
   const [showStageDropdown, setShowStageDropdown] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [editingNextStep, setEditingNextStep] = useState(false)
   const [nextStepText, setNextStepText] = useState('')
   const [nextStepDate, setNextStepDate] = useState('')
@@ -210,7 +211,14 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               </button>
             </>
           )}
-          <button 
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Redigera lead"
+          >
+            <Edit2 className="w-5 h-5" />
+          </button>
+          <button
             onClick={() => setShowDeleteConfirm(true)}
             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Ta bort lead"
@@ -622,6 +630,17 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
         </div>
       </div>
 
+      {/* Edit modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowEditModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Redigera lead</h3>
+            <EditLeadForm lead={lead} onClose={() => setShowEditModal(false)} onSaved={() => { setShowEditModal(false); queryClient.invalidateQueries({ queryKey: ['lead', id] }) }} />
+          </div>
+        </div>
+      )}
+
       {/* Delete confirmation */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -644,6 +663,77 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => void; onSaved: () => void }) {
+  const [title, setTitle] = useState(lead.title || '')
+  const [description, setDescription] = useState(lead.description || '')
+  const [estimatedValue, setEstimatedValue] = useState(lead.estimatedValue?.toString() || '')
+  const [closeProbability, setCloseProbability] = useState(lead.closeProbability?.toString() || '50')
+  const [expectedCloseDate, setExpectedCloseDate] = useState(lead.expectedCloseDate ? lead.expectedCloseDate.split('T')[0] : '')
+  const [source, setSource] = useState(lead.source || '')
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    setSaving(true)
+    await fetch(`/api/leads/${lead.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        description,
+        estimatedValue: estimatedValue ? parseFloat(estimatedValue) : null,
+        closeProbability: closeProbability ? parseInt(closeProbability, 10) : null,
+        expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate).toISOString() : null,
+        source,
+      }),
+    })
+    setSaving(false)
+    onSaved()
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Titel</label>
+        <input className="input w-full" value={title} onChange={e => setTitle(e.target.value)} />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Beskrivning</label>
+        <textarea className="input w-full" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Uppskattat värde (SEK)</label>
+          <input className="input w-full" type="number" value={estimatedValue} onChange={e => setEstimatedValue(e.target.value)} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Sannolikhet (%)</label>
+          <input className="input w-full" type="number" min="0" max="100" value={closeProbability} onChange={e => setCloseProbability(e.target.value)} />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Förväntat avslut</label>
+        <input className="input w-full" type="date" value={expectedCloseDate} onChange={e => setExpectedCloseDate(e.target.value)} />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Källa</label>
+        <select className="input w-full" value={source} onChange={e => setSource(e.target.value)}>
+          <option value="">Välj källa</option>
+          <option value="bookme">BookMe</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="referral">Referral</option>
+          <option value="other">Annat</option>
+        </select>
+      </div>
+      <div className="flex justify-end gap-3 pt-2">
+        <button onClick={onClose} className="btn-secondary">Avbryt</button>
+        <button onClick={handleSave} disabled={saving} className="btn-primary">
+          {saving ? 'Sparar...' : 'Spara'}
+        </button>
+      </div>
     </div>
   )
 }
