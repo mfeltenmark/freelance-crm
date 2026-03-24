@@ -87,7 +87,8 @@ model Lead {
   activities          Activity[]
   proposals           Proposal[]
   tasks               Task[]
-  
+  transcript          Transcript?
+
   // Payment
   isPaid              Boolean     @default(false)
   paymentNote         String?     @db.Text
@@ -96,6 +97,10 @@ model Lead {
   tags                String[]
   customFields        Json?
   
+  meetingUrl          String?
+  scheduledAt         DateTime?
+  durationMinutes     Int?
+
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
@@ -379,6 +384,20 @@ model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
-  
+
   @@unique([identifier, token])
+}
+
+model Transcript {
+  id            String    @id @default(cuid())
+  leadId        String    @unique
+  lead          Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  rawText       String    @db.Text
+  summary       String?   @db.Text
+  actionItems   String?   @db.Text
+  status        String    @default("pending")
+  language      String    @default("sv")
+  emailSentAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }

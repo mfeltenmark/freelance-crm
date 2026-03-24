@@ -112,6 +112,9 @@ async function processBooking(booking: BookingPayload) {
         stage: 'CONTACTED',
         contactId: contact.id,
         companyId: companyId,
+        meetingUrl:      booking.meetingUrl      ?? null,
+        scheduledAt:     booking.scheduledDate   ? new Date(booking.scheduledDate) : null,
+        durationMinutes: booking.duration        ?? null,
         description: [
           booking.notes ?? '',
           `Source: ${booking.source}`,
