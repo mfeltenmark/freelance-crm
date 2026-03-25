@@ -55,6 +55,13 @@ under övergångsperioder.
 Nyckelord: teknisk ledning, CTO, interim, tech strategi, teambyggnad,
 teknisk skuld, arkitekturstyrning.
 
+RIKTNING: Projektledning / PM
+Positionering: Erfaren projektledare och programledare som driver komplexa leveranser
+i tid, budget och scope i enterprise-miljö. Kombinerar strukturerad projektmetodik med
+pragmatisk problemlösning och stark stakeholder-kommunikation.
+Nyckelord: projektledning, programledning, PMP, Prince2, scope management, riskhantering,
+leveransansvar, tidplan, budget, styrgrupp, statusrapportering, förändringsledning.
+
 ## VERIFIERADE UPPDRAG OCH CASE
 
 TUI Group | Nordic Change Lead

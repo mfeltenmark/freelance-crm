@@ -10,6 +10,9 @@ const RIKTNINGAR = [
   'Agil coach',
   'Integrations-PM',
   'Interims-CTO',
+  'Projektledning / PM',
+  'Projektledning / PM',
+  'Projektledning / PM',
 ]
 
 interface CVData {
