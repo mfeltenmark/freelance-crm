@@ -3,18 +3,19 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  LayoutDashboard, 
-  Users, 
-  Briefcase, 
-  CheckSquare, 
-  Calendar, 
+import {
+  LayoutDashboard,
+  Users,
+  Briefcase,
+  CheckSquare,
+  Calendar,
   BarChart3,
   Settings,
   Zap,
   X,
   Menu,
-  LogOut
+  LogOut,
+  FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut, useSession } from 'next-auth/react'
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Tasks', href: '/tasks', icon: CheckSquare },
   { name: 'Kalender', href: '/calendar', icon: Calendar },
   { name: 'Rapporter', href: '/reports', icon: BarChart3 },
+  { name: 'CV-generator', href: '/cv-generator', icon: FileText },
 ]
 
 const bottomNav = [
