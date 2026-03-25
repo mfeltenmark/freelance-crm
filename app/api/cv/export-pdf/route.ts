@@ -20,6 +20,7 @@ function buildCVHtml(cv: any): string {
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
+<title>CV_${cv.name.replace(/ /g, '_')}_${new Date().toISOString().split('T')[0]}</title>
 <style>
   @page {
     size: A4;
