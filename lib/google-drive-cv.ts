@@ -162,9 +162,12 @@ export async function saveMasterPrompt(content: string): Promise<void> {
 export async function saveGeneratedCV(filename: string, content: string): Promise<void> {
   const drive = getDriveClient()
 
+  const generatedFiles = await listCVFiles('generated')
   const foldersRes = await drive.files.list({
     q: `'${FOLDER_ID}' in parents and name = 'generated' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
     fields: 'files(id)',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   })
 
   const generatedFolderId = foldersRes.data.files?.[0]?.id
