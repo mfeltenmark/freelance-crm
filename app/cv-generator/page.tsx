@@ -22,6 +22,8 @@ interface CVData {
   engagements: { client: string; role: string; period: string; description: string }[]
   education: { degree: string; school: string; year: string }[]
   references?: { quote: string; name: string; title: string }[]
+  certifications?: { name: string; issuer: string; year: string }[]
+  languages?: { language: string; level: string }[]
 }
 
 export default function CVGeneratorPage() {
