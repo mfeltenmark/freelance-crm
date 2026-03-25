@@ -163,7 +163,7 @@ export default function CVGeneratorPage() {
               { label: 'Fokus', value: fokus, setter: setFokus, options: ['Balanserat', 'Strategisk tyngd', 'Teknisk tyngd'] },
               { label: 'Längd', value: langd, setter: setLangd, options: ['Standard 2 sidor', 'Kompakt 1 sida'] },
               { label: 'Ton', value: ton, setter: setTon, options: ['Direkt och affärsnära', 'Formell'] },
-              { label: 'Lyft fram', value: lyttFram, setter: setLyttFram, options: ['Automatiskt', 'Plattformsstrategi', 'Digital transformation', 'Produktledning', 'Ledarskap'] },
+              { label: 'Lyft fram', value: lyttFram, setter: setLyttFram, options: ['Automatiskt', 'Plattformsstrategi', 'Digital transformation', 'Produktledning', 'Ledarskap', 'Förändringsledning'] },
             ].map(({ label, value, setter, options }) => (
               <div key={label}>
                 <label className="block text-xs text-gray-400 font-medium mb-1">{label}</label>

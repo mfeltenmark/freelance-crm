@@ -72,9 +72,18 @@ att bygga en WSJF-baserad prioriteringsmodell som adopterades internationellt.
 Relevant för: Plattformsstrategi, Digital transformation, Produktledning, Interims-CTO.
 
 Bombardier Transportation | Projektledare (konsult via verynicepeople)
-Januari 2010 - September 2010. Leverantörens projektledare för leverans av nytt
-tågledningssystem till Trafikverket (Svenska Transportmyndigheten).
+Januari 2010 - September 2010.
+Leverantörens projektledare för leverans av nytt tågledningssystem för regionaltåg
+i norra Sverige till Trafikverket. Detta är ett separat uppdrag från den tidiga
+karriären på Bombardier 1993-2001 och ska aldrig slås ihop med det.
 Relevant för: Järnväg, Projektledning, Plattformsstrategi, Integrations-PM.
+
+Bombardier Transportation | Systemansvarig och projektledare (anställd)
+1993 - 2001.
+Ansvarig för tågledningssystem för Stockholms tågledningscentral samt
+projektledare inom Arlandabanan. Detta är den tidiga karriären och ett helt
+separat uppdrag från konsultuppdraget 2010.
+Relevant för: Järnväg, Projektledning, Interims-CTO.
 
 AARO Systems | Product Manager & Team Coach
 Tidig skalningsfas för produktbolag. Identifierade och löste otydliga prioriteringar,
