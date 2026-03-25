@@ -1,234 +1,119 @@
 import { NextRequest, NextResponse } from 'next/server'
-import React from 'react'
-import { renderToBuffer, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 
 const purple = '#5e3a8c'
-
-const styles = StyleSheet.create({
-  page: {
-    fontFamily: 'Times-Roman',
-    fontSize: 11,
-    color: '#111111',
-    paddingTop: 40,
-    paddingBottom: 40,
-    paddingLeft: 48,
-    paddingRight: 48,
-    lineHeight: 1.5,
-  },
-  name: {
-    fontSize: 22,
-    fontFamily: 'Times-Bold',
-    letterSpacing: -0.5,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 12,
-    color: purple,
-    marginBottom: 4,
-  },
-  contact: {
-    fontSize: 9.5,
-    color: '#555555',
-    marginBottom: 0,
-  },
-  divider: {
-    borderBottomWidth: 1.5,
-    borderBottomColor: purple,
-    marginTop: 14,
-    marginBottom: 14,
-  },
-  thinDivider: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#dddddd',
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  tagline: {
-    fontSize: 11,
-    color: '#222222',
-    fontFamily: 'Times-Italic',
-    lineHeight: 1.6,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 9,
-    fontFamily: 'Times-Bold',
-    color: purple,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginBottom: 8,
-    marginTop: 16,
-  },
-  competenciesRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 5,
-    marginBottom: 4,
-  },
-  competency: {
-    fontSize: 9.5,
-    color: purple,
-    borderWidth: 0.5,
-    borderColor: purple,
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingLeft: 8,
-    paddingRight: 8,
-    marginBottom: 4,
-  },
-  engagementHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 2,
-  },
-  engagementClient: {
-    fontSize: 11,
-    fontFamily: 'Times-Bold',
-    color: '#111111',
-  },
-  engagementPeriod: {
-    fontSize: 9.5,
-    color: '#777777',
-  },
-  engagementRole: {
-    fontSize: 10,
-    color: purple,
-    marginBottom: 3,
-  },
-  engagementDesc: {
-    fontSize: 10,
-    color: '#333333',
-    lineHeight: 1.55,
-  },
-  referenceBlock: {
-    borderLeftWidth: 2,
-    borderLeftColor: purple,
-    paddingLeft: 10,
-    marginBottom: 10,
-  },
-  referenceQuote: {
-    fontSize: 10,
-    fontFamily: 'Times-Italic',
-    color: '#333333',
-    lineHeight: 1.55,
-  },
-  referenceName: {
-    fontSize: 9.5,
-    fontFamily: 'Times-Bold',
-    color: '#111111',
-    marginTop: 3,
-  },
-  referenceTitle: {
-    fontSize: 9,
-    color: '#666666',
-  },
-  educationItem: {
-    fontSize: 10,
-    color: '#333333',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    textAlign: 'center',
-    fontSize: 8.5,
-    color: '#aaaaaa',
-  },
-})
 
 export async function POST(req: NextRequest) {
   try {
     const { cv } = await req.json()
-
-    const doc = React.createElement(
-      Document,
-      null,
-      React.createElement(
-        Page,
-        { size: 'A4', style: styles.page },
-        React.createElement(Text, { style: styles.name }, cv.name),
-        React.createElement(Text, { style: styles.title }, `${cv.title} | Tech & Change by Feltenmark AB`),
-        React.createElement(Text, { style: styles.contact }, `${cv.contact.email}  •  ${cv.contact.phone}  •  ${cv.contact.linkedin}  •  ${cv.contact.location}`),
-        React.createElement(View, { style: styles.divider }),
-        React.createElement(Text, { style: styles.tagline }, cv.tagline),
-
-        React.createElement(Text, { style: styles.sectionTitle }, 'Kärnkompetenser'),
-        React.createElement(
-          View,
-          { style: styles.competenciesRow },
-          ...cv.competencies.map((c: string) =>
-            React.createElement(Text, { key: c, style: styles.competency }, c)
-          )
-        ),
-
-        React.createElement(Text, { style: styles.sectionTitle }, 'Uppdragshistorik'),
-        ...cv.engagements.flatMap((e: any, i: number) => [
-          React.createElement(
-            View,
-            { key: `eng-${i}` },
-            React.createElement(
-              View,
-              { style: styles.engagementHeader },
-              React.createElement(Text, { style: styles.engagementClient }, e.client),
-              React.createElement(Text, { style: styles.engagementPeriod }, e.period)
-            ),
-            React.createElement(Text, { style: styles.engagementRole }, e.role),
-            React.createElement(Text, { style: styles.engagementDesc }, e.description)
-          ),
-          React.createElement(View, { key: `div-${i}`, style: styles.thinDivider }),
-        ]),
-
-        React.createElement(Text, { style: styles.sectionTitle }, 'Utbildning'),
-        ...cv.education.map((e: any, i: number) =>
-          React.createElement(Text, { key: i, style: styles.educationItem }, `${e.degree} — ${e.school}${e.year ? ` (${e.year})` : ''}`)
-        ),
-
-        ...(cv.certifications?.length ? [
-          React.createElement(Text, { style: styles.sectionTitle }, 'Certifieringar'),
-          ...cv.certifications.map((c: any, i: number) =>
-            React.createElement(Text, { key: i, style: styles.educationItem }, `${c.name} - ${c.issuer}, ${c.year}`)
-          ),
-        ] : []),
-
-        ...(cv.languages?.length ? [
-          React.createElement(Text, { style: styles.sectionTitle }, 'Språk'),
-          React.createElement(
-            View,
-            { style: { flexDirection: 'row', gap: 16 } },
-            ...cv.languages.map((l: any, i: number) =>
-              React.createElement(Text, { key: i, style: styles.educationItem }, `${l.language}: ${l.level}`)
-            )
-          ),
-        ] : []),
-
-        ...(cv.references?.length ? [
-          React.createElement(Text, { style: styles.sectionTitle }, 'Vad kunder säger'),
-          ...cv.references.map((r: any, i: number) =>
-            React.createElement(
-              View,
-              { key: i, style: styles.referenceBlock },
-              React.createElement(Text, { style: styles.referenceQuote }, `"${r.quote}"`),
-              React.createElement(Text, { style: styles.referenceName }, r.name),
-              React.createElement(Text, { style: styles.referenceTitle }, r.title)
-            )
-          ),
-        ] : []),
-
-        React.createElement(Text, { style: styles.footer, fixed: true }, 'techchange.io')
-      )
-    )
-
-    const buffer = await renderToBuffer(doc)
-
-    return new NextResponse(buffer as unknown as BodyInit, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="CV_Mikael_Feltenmark.pdf"',
-      },
+    const html = buildCVHtml(cv)
+    return new NextResponse(html, {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
     })
   } catch (error) {
     console.error('PDF export error:', error)
-    return NextResponse.json({ error: 'PDF-generering misslyckades' }, { status: 500 })
+    return NextResponse.json({ error: 'Serverfel' }, { status: 500 })
   }
+}
+
+function buildCVHtml(cv: any): string {
+  return `<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page {
+    size: A4;
+    margin: 28mm 32mm 24mm 32mm;
+  }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-break { page-break-inside: avoid; }
+    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 8pt; color: #aaa; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Georgia', serif; font-size: 10.5pt; color: #111; line-height: 1.55; }
+  h1 { font-size: 21pt; font-weight: 700; color: #111; letter-spacing: -0.5px; }
+  .title { font-size: 11.5pt; color: ${purple}; font-weight: 400; margin-top: 3px; }
+  .contact { font-size: 9pt; color: #555; margin-top: 5px; }
+  .divider { border: none; border-top: 1.5px solid ${purple}; margin: 14px 0; }
+  .thin-divider { border: none; border-top: 0.5px solid #e0e0e0; margin: 10px 0; }
+  .tagline { font-size: 10.5pt; color: #222; line-height: 1.6; margin-bottom: 16px; font-style: italic; }
+  .section-title { font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: ${purple}; margin-bottom: 8px; margin-top: 16px; }
+  .competencies { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 2px; }
+  .competency { font-size: 9pt; border: 0.5px solid ${purple}; color: ${purple}; padding: 2px 9px; border-radius: 2px; }
+  .engagement { margin-bottom: 12px; }
+  .engagement-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .engagement-client { font-weight: 700; font-size: 10.5pt; color: #111; }
+  .engagement-period { font-size: 9pt; color: #777; }
+  .engagement-role { font-size: 9.5pt; color: ${purple}; margin-bottom: 3px; }
+  .engagement-desc { font-size: 9.5pt; color: #333; line-height: 1.5; }
+  .reference { border-left: 2px solid ${purple}; padding-left: 10px; margin-bottom: 10px; }
+  .reference-quote { font-size: 9.5pt; font-style: italic; color: #333; line-height: 1.55; }
+  .reference-name { font-size: 9pt; font-weight: 700; color: #111; margin-top: 3px; }
+  .reference-title { font-size: 8.5pt; color: #666; }
+  .education-item { font-size: 9.5pt; color: #333; margin-bottom: 3px; }
+  .cert-item { font-size: 9.5pt; color: #333; margin-bottom: 3px; }
+  .languages { font-size: 9.5pt; color: #333; }
+  .footer { margin-top: 24px; font-size: 8pt; color: #aaa; text-align: center; }
+</style>
+<script>
+  window.onload = function() { window.print(); }
+</script>
+</head>
+<body>
+  <h1>${cv.name}</h1>
+  <div class="title">${cv.title} | Tech &amp; Change by Feltenmark AB</div>
+  <div class="contact">${cv.contact.email} &nbsp;&bull;&nbsp; ${cv.contact.phone} &nbsp;&bull;&nbsp; ${cv.contact.linkedin} &nbsp;&bull;&nbsp; ${cv.contact.location}</div>
+  <hr class="divider">
+  <p class="tagline">${cv.tagline}</p>
+
+  <div class="section-title">Kärnkompetenser</div>
+  <div class="competencies">
+    ${cv.competencies.map((c: string) => `<span class="competency">${c}</span>`).join('')}
+  </div>
+
+  <div class="section-title">Uppdragshistorik</div>
+  ${cv.engagements.map((e: any) => `
+    <div class="engagement no-break">
+      <div class="engagement-header">
+        <span class="engagement-client">${e.client}</span>
+        <span class="engagement-period">${e.period}</span>
+      </div>
+      <div class="engagement-role">${e.role}</div>
+      <div class="engagement-desc">${e.description}</div>
+    </div>
+    <hr class="thin-divider">
+  `).join('')}
+
+  <div class="section-title">Utbildning</div>
+  ${cv.education.map((e: any) => `
+    <div class="education-item">${e.degree}, ${e.school}${e.year ? ` (${e.year})` : ''}</div>
+  `).join('')}
+
+  ${cv.certifications?.length ? `
+    <div class="section-title">Certifieringar</div>
+    ${cv.certifications.map((c: any) => `
+      <div class="cert-item">${c.name} - ${c.issuer}, ${c.year}</div>
+    `).join('')}
+  ` : ''}
+
+  ${cv.languages?.length ? `
+    <div class="section-title">Språk</div>
+    <div class="languages">${cv.languages.map((l: any) => `${l.language}: ${l.level}`).join('&nbsp;&nbsp;&bull;&nbsp;&nbsp;')}</div>
+  ` : ''}
+
+  ${cv.references?.length ? `
+    <div class="section-title">Vad kunder säger</div>
+    ${cv.references.map((r: any) => `
+      <div class="reference no-break">
+        <div class="reference-quote">"${r.quote}"</div>
+        <div class="reference-name">${r.name}</div>
+        <div class="reference-title">${r.title}</div>
+      </div>
+    `).join('')}
+  ` : ''}
+
+  <div class="footer">techchange.io</div>
+</body>
+</html>`
 }
