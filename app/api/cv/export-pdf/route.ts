@@ -221,7 +221,7 @@ export async function POST(req: NextRequest) {
 
     const buffer = await renderToBuffer(doc)
 
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="CV_Mikael_Feltenmark.pdf"',
