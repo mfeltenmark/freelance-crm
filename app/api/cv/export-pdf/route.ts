@@ -184,6 +184,24 @@ export async function POST(req: NextRequest) {
           React.createElement(Text, { key: i, style: styles.educationItem }, `${e.degree} — ${e.school}${e.year ? ` (${e.year})` : ''}`)
         ),
 
+        ...(cv.certifications?.length ? [
+          React.createElement(Text, { style: styles.sectionTitle }, 'Certifieringar'),
+          ...cv.certifications.map((c: any, i: number) =>
+            React.createElement(Text, { key: i, style: styles.educationItem }, `${c.name} - ${c.issuer}, ${c.year}`)
+          ),
+        ] : []),
+
+        ...(cv.languages?.length ? [
+          React.createElement(Text, { style: styles.sectionTitle }, 'Språk'),
+          React.createElement(
+            View,
+            { style: { flexDirection: 'row', gap: 16 } },
+            ...cv.languages.map((l: any, i: number) =>
+              React.createElement(Text, { key: i, style: styles.educationItem }, `${l.language}: ${l.level}`)
+            )
+          ),
+        ] : []),
+
         ...(cv.references?.length ? [
           React.createElement(Text, { style: styles.sectionTitle }, 'Vad kunder säger'),
           ...cv.references.map((r: any, i: number) =>
