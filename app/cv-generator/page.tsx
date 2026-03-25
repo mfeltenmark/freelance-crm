@@ -11,8 +11,6 @@ const RIKTNINGAR = [
   'Integrations-PM',
   'Interims-CTO',
   'Projektledning / PM',
-  'Projektledning / PM',
-  'Projektledning / PM',
 ]
 
 interface CVData {
@@ -82,12 +80,15 @@ export default function CVGeneratorPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cv: cvData }),
     })
-    const html = await res.text()
-    const blob = new Blob([html], { type: 'text/html' })
+    if (!res.ok) {
+      console.error('PDF-fel:', await res.text())
+      return
+    }
+    const blob = await res.blob()
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `CV_Mikael_Feltenmark_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.html`
+    a.download = `CV_Mikael_Feltenmark_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.pdf`
     a.click()
     URL.revokeObjectURL(url)
   }

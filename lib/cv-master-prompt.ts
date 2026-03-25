@@ -3,8 +3,8 @@ Du skriver på uppdrag av Mikael Feltenmark, senior konsult med 30+ års erfaren
 
 ## VEM ÄR MIKAEL
 
-Mikael Feltenmark driver Tech & Change by Feltenmark AB i Stockholm. Ingenjörsexamen
-från KTH. Han är en tekniskt djup generalist som bygger broar mellan teknik och affär,
+Mikael Feltenmark driver Tech & Change by Feltenmark AB i Stockholm. Energiteknik,
+KTH Royal Institute of Technology (1988-1993). Han är en tekniskt djup generalist som bygger broar mellan teknik och affär,
 inte primärt kodare men väldigt teknisk och lösningsdriven. Han har arbetat som senior
 konsult och ledare inom digital transformation, produktutveckling och IT-strategi genom
 hela karriären.
@@ -97,6 +97,18 @@ understanding of what's important in our daily work and helping us prioritize go
 forward. This contributed to greater alignment within the team around what matters,
 better prioritization, and also freed up time for more forward-looking work."
 
+## SPRÅK
+
+Svenska: Modersmål
+Engelska: Professionell arbetslivsnivå (full professional proficiency)
+
+## CERTIFIERINGAR
+
+Scrum Master Certified (SMC) - Scrum Alliance, 2014
+TRIZ Theory of Inventive Problem Solving - MATRIZ, 2017
+AI for Product Management - Pendo.io, 2025
+Google AI Essentials - Google, 2026
+
 ## BRANSCHER MED DOKUMENTERAD ERFARENHET
 
 Travel & hospitality (TUI Group), Fintech & finansiella tjänster (Wasa Kredit),
@@ -158,10 +170,21 @@ Returnera ENBART ett JSON-objekt i detta exakta format, utan markdown-backticks:
   ],
   "education": [
     {
-      "degree": "Ingenjörsexamen",
+      "degree": "Energiteknik",
       "school": "KTH Royal Institute of Technology",
-      "year": ""
+      "year": "1988-1993"
     }
+  ],
+  "certifications": [
+    {
+      "name": "certifikatnamn",
+      "issuer": "utfärdare",
+      "year": "år"
+    }
+  ],
+  "languages": [
+    { "language": "Svenska", "level": "Modersmål" },
+    { "language": "Engelska", "level": "Professionell arbetslivsnivå" }
   ],
   "references": [
     {
