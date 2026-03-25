@@ -19,6 +19,8 @@ export async function listCVFiles(subfolder: 'raw' | 'generated' | 'master') {
   const foldersRes = await drive.files.list({
     q: `'${FOLDER_ID}' in parents and name = '${subfolder}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
     fields: 'files(id, name)',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   })
 
   const subfolderItem = foldersRes.data.files?.[0]
@@ -28,6 +30,8 @@ export async function listCVFiles(subfolder: 'raw' | 'generated' | 'master') {
     q: `'${subfolderItem.id}' in parents and trashed = false`,
     fields: 'files(id, name, mimeType, modifiedTime)',
     orderBy: 'modifiedTime desc',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   })
 
   return filesRes.data.files || []
@@ -140,6 +144,7 @@ export async function saveMasterPrompt(content: string): Promise<void> {
     await drive.files.update({
       fileId: existing.data.files[0].id!,
       media: { mimeType: 'text/plain', body: content },
+      supportsAllDrives: true,
     })
   } else {
     await drive.files.create({
@@ -149,6 +154,7 @@ export async function saveMasterPrompt(content: string): Promise<void> {
         mimeType: 'text/plain',
       },
       media: { mimeType: 'text/plain', body: content },
+      supportsAllDrives: true,
     })
   }
 }
@@ -171,5 +177,6 @@ export async function saveGeneratedCV(filename: string, content: string): Promis
       mimeType: 'text/plain',
     },
     media: { mimeType: 'text/plain', body: content },
+    supportsAllDrives: true,
   })
 }
