@@ -56,16 +56,39 @@ export async function readFileAsText(fileId: string, mimeType: string): Promise<
   return ''
 }
 
-export async function readAllCVFiles(riktning?: string): Promise<string> {
-  const files = await listCVFiles('raw')
+export async function readAllCVFiles(kravprofil?: string): Promise<string> {
+  const rawFiles = await listCVFiles('raw')
   const generatedFiles = await listCVFiles('generated')
-  const allFiles = [...files, ...generatedFiles].slice(0, 20)
+
+  const profileFile = rawFiles.find(f => f.name?.toLowerCase().includes('profile'))
+  const otherRawFiles = rawFiles.filter(f => !f.name?.toLowerCase().includes('profile'))
+  const allOtherFiles = [...otherRawFiles, ...generatedFiles]
+
+  let selectedFiles = allOtherFiles
+  if (kravprofil && kravprofil.trim().length > 0) {
+    const keywords = extractKeywords(kravprofil)
+    const scored = allOtherFiles.map(f => ({
+      file: f,
+      score: scoreFile(f.name || '', keywords),
+    }))
+    scored.sort((a, b) => b.score - a.score)
+    selectedFiles = scored.slice(0, 18).map(s => s.file)
+  } else {
+    selectedFiles = allOtherFiles.slice(0, 18)
+  }
+
+  const filesToRead = profileFile
+    ? [profileFile, ...selectedFiles]
+    : selectedFiles
 
   const texts = await Promise.all(
-    allFiles.map(async (file) => {
+    filesToRead.map(async (file) => {
       try {
         const text = await readFileAsText(file.id!, file.mimeType!)
-        return `=== ${file.name} ===\n${text.slice(0, 3000)}`
+        const label = file.name?.toLowerCase().includes('profile')
+          ? '=== LINKEDIN PROFILE (kronologisk erfarenhetshistorik) ==='
+          : `=== ${file.name} ===`
+        return `${label}\n${text.slice(0, 2500)}`
       } catch {
         return ''
       }
@@ -73,6 +96,20 @@ export async function readAllCVFiles(riktning?: string): Promise<string> {
   )
 
   return texts.filter(Boolean).join('\n\n')
+}
+
+function extractKeywords(text: string): string[] {
+  const lower = text.toLowerCase()
+  const stopwords = new Set(['och', 'att', 'det', 'som', 'för', 'med', 'på', 'av', 'en', 'ett', 'är', 'the', 'and', 'for', 'with', 'that', 'this', 'have', 'has', 'from', 'you', 'your', 'our', 'are', 'not', 'but', 'will', 'can', 'may', 'ska', 'som', 'till', 'vid', 'inom', 'över', 'under', 'vara', 'eller', 'även', 'samt', 'där', 'när'])
+  const words = lower.match(/[a-zåäö]{4,}/g) || []
+  return [...new Set(words.filter(w => !stopwords.has(w)))].slice(0, 40)
+}
+
+function scoreFile(filename: string, keywords: string[]): number {
+  const lower = filename.toLowerCase()
+  return keywords.reduce((score, kw) => {
+    return lower.includes(kw) ? score + 1 : score
+  }, 0)
 }
 
 export async function getMasterPrompt(): Promise<string | null> {

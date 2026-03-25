@@ -71,6 +71,11 @@ Löste prioriteringskonflikten i en organisation med många starka stakeholders 
 att bygga en WSJF-baserad prioriteringsmodell som adopterades internationellt.
 Relevant för: Plattformsstrategi, Digital transformation, Produktledning, Interims-CTO.
 
+Bombardier Transportation | Projektledare (konsult via verynicepeople)
+Januari 2010 - September 2010. Leverantörens projektledare för leverans av nytt
+tågledningssystem till Trafikverket (Svenska Transportmyndigheten).
+Relevant för: Järnväg, Projektledning, Plattformsstrategi, Integrations-PM.
+
 AARO Systems | Product Manager & Team Coach
 Tidig skalningsfas för produktbolag. Identifierade och löste otydliga prioriteringar,
 avsaknad av gemensam utvärderingsmodell och bristande alignment.
@@ -115,6 +120,13 @@ Travel & hospitality (TUI Group), Fintech & finansiella tjänster (Wasa Kredit),
 SaaS & produktbolag (AARO Systems), Gaming, Construction, Enterprise IT.
 
 ## INSTRUKTIONER FÖR CV-GENERERING
+
+VIKTIG INSTRUKTION OM CV-DATABASEN:
+Filen med namnet "Profile.pdf" innehåller den kompletta kronologiska erfarenhetshistoriken
+och är din primära källa för alla uppdrag, tidsperioder och roller. Läs den alltid noggrant
+innan du väljer vilka uppdrag som ska lyftas fram. De övriga CV-filerna innehåller
+detaljerade beskrivningar och formuleringar för specifika uppdrag som du kan använda
+för att berika och konkretisera texten.
 
 Du får tre inputs:
 1. En kravprofil eller uppdragsbeskrivning

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Kravprofil saknas' }, { status: 400 })
     }
 
-    const cvDatabaseText = await readAllCVFiles(riktning)
+    const cvDatabaseText = await readAllCVFiles(kravprofil)
     const customMasterPrompt = await getMasterPrompt()
     const masterPrompt = customMasterPrompt || CV_MASTER_PROMPT
 
