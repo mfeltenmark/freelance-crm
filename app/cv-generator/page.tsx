@@ -272,10 +272,10 @@ export default function CVGeneratorPage() {
                 {cvData.engagements.length > 2 && (
                   <div className="text-xs text-gray-400">+{cvData.engagements.length - 2} uppdrag till</div>
                 )}
-                {cvData.certifications?.length > 0 && (
+                {(cvData.certifications?.length ?? 0) > 0 && (
                   <div className="mt-2">
                     <div className="text-xs font-medium mt-2 mb-1" style={{ color: '#5e3a8c' }}>Certifieringar</div>
-                    {cvData.certifications.slice(0, 2).map((c: any) => (
+                    {cvData.certifications?.slice(0, 2).map((c: any) => (
                       <div key={c.name} className="text-xs text-gray-500">{c.name}, {c.year}</div>
                     ))}
                   </div>
