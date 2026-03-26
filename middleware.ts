@@ -1,35 +1,36 @@
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-edge'
-import { NextResponse } from 'next/server'
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl
-  const isLoggedIn = !!req.auth
+const unprotectedPaths = [
+  '/login',
+  '/api/auth',
+  '/api/webhooks',
+  '/api/bookings',
+  '/api/transcripts',
+  '/api/contacts',
+  '/api/card',
+]
 
-  const publicRoutes = ['/login']
-  const isPublicRoute = publicRoutes.includes(pathname)
-  const isAuthApi = pathname.startsWith('/api/auth')
-  const isUnprotectedApi =
-    pathname.startsWith('/api/webhooks') ||
-    pathname.startsWith('/api/bookings') ||
-    pathname.startsWith('/api/transcripts') ||
-    pathname.startsWith('/api/contacts') ||
-    pathname.startsWith('/api/card')
+function isUnprotected(pathname: string): boolean {
+  return unprotectedPaths.some(path => pathname.startsWith(path))
+}
 
-  if (isPublicRoute || isAuthApi || isUnprotectedApi) {
-    if (isLoggedIn && pathname === '/login') {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
-    }
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  if (isUnprotected(pathname)) {
     return NextResponse.next()
   }
 
-  if (!isLoggedIn) {
-    const loginUrl = new URL('/login', req.url)
+  const session = await auth()
+  if (!session) {
+    const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
