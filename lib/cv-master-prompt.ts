@@ -72,39 +72,135 @@ leveransansvar, tidplan, budget, styrgrupp, statusrapportering, förändringsled
 
 ## VERIFIERADE UPPDRAG OCH CASE
 
+Använd dessa som primärkällor. Komplettera med detaljer från CV-databasen.
+Välj ALLTID uppdrag baserat på relevans för kravprofilen, inte kronologisk ordning.
+
+Tech & Change by Feltenmark AB | Founder & Interim CIO/CTO/CPO
+Oktober 2024 - pågående.
+Eget bolag för interim ledarskap och strategisk rådgivning. WSJF-ramverk
+testat och förfinat över flera organisationer.
+Relevant för: Produktledning, Interim Head of Product, Interims-CTO, Digital transformation.
+
+AARO Systems | Product Manager & Team Coach
+Oktober 2024 - Oktober 2025.
+Produktansvar för avancerad CPM-plattform för multinationella koncerner.
+API-strategier, systeminteroperabilitet, prioriteringsmodeller, WoW-principer.
+Tech: Azure, .NET Core, microservices, enterprise APIs.
+Relevant för: Produktledning, Integrations-PM, Digital transformation, Interim Head of Product.
+
+Byggfakta Group | Projektledare BRS (konsult)
+April 2024 - September 2024.
+Implementation av nytt forskningssystem, sunset-strategi för 25+ legacysystem.
+Tech: Azure MS-SQL, .NET Core 8, React 18, Power BI.
+Relevant för: Projektledning, Integrations-PM, Digital transformation.
+
 TUI Group | Nordic Change Lead
-Global plattformstransformation. Ledde övergång från 4 separata IT-organisationer
-till centraliserad global plattform. Påverkan: €2+ miljarder i digital försäljning.
-Löste prioriteringskonflikten i en organisation med många starka stakeholders genom
-att bygga en WSJF-baserad prioriteringsmodell som adopterades internationellt.
-Relevant för: Plattformsstrategi, Digital transformation, Produktledning, Interims-CTO.
+Januari 2021 - Mars 2024.
+Ledde nordiskt förändringsteam i övergång till centraliserad global plattform.
+Byggde och skalade WSJF-baserad prioriteringsmodell globalt.
+Relevant för: Digital transformation, Produktledning, Plattformsstrategi, Agil coach.
+
+TUI Group | Nordic Digital Development Lead
+Oktober 2019 - Januari 2021.
+Kombinerade lokala och centrala team i plattformsövergången. Behöll
+prioriteringsmodellen konsistent oavsett var utvecklingen skedde.
+Relevant för: Digital transformation, Produktledning, Agil coach.
+
+TUI Group | Nordic Implementation Lead & Nordic Product Owner Lead
+Februari 2018 - Oktober 2019.
+Drev nordiska behov i TUI Groups globala förändringsprogram för webb och app.
+Implementerade gemensam modell för prioritering av webb/app-utveckling för
+4 marknader: Danmark, Finland, Sverige och Norge. Påverkan: €2+ miljarder i
+digital försäljning.
+Relevant för: Produktledning, Digital transformation, Plattformsstrategi.
+
+Cygni | Senior Consultant
+Januari 2015 - Februari 2018.
+Ramavtalskonsult med uppdrag hos Kronofogden, SAMI och Wasa Kredit.
+
+Kronofogden | Teknisk IT-projektledare & Application Manager IT (via Cygni)
+Augusti 2017 - Januari 2018.
+Teknisk projektledare för nytt mikrotjänstbaserat ärendehanteringssystem.
+Application Manager för befintligt mainframe-system.
+Relevant för: Integrations-PM, Projektledning, Digital transformation.
+
+SAMI | IT-projektledare (via Cygni)
+November 2016 - Maj 2017.
+Projektledare för nytt royalty-hanteringssystem STAR. Migrerade legacy-monolit
+till event-driven microservices på AWS.
+Relevant för: Integrations-PM, Projektledning, Plattformsstrategi.
+
+Wasa Kredit AB | Application Manager IT (via Cygni och Claremont)
+Juni 2014 - December 2016.
+Application Manager för kundsjälvservice och administrativt stöd.
+IT-projektledare för nytt intranät (EPiServer) och nytt arbetsflödessystem.
+Implementerade pm3 som förvaltningsmodell från grunden.
+Relevant för: Projektledning, Integrations-PM, Digital transformation.
+
+Zington | Senior Consultant
+April 2011 - Januari 2015.
+Ramavtalskonsult med uppdrag hos Trafikförvaltningen, Lärarförbundet, FMV,
+Timecut och Rikspolisstyrelsen.
+
+Trafikförvaltningen/SL | IT-projektledare (via Claremont)
+Mars 2014 - Maj 2014.
+EVRY:s IT-projektledare för driftövertagande av SNOK, kraftdistributionssystem
+för Stockholms tunnelbana. Verksamhetskritisk infrastruktur.
+Relevant för: Projektledning, Integrations-PM, Interims-CTO.
+
+Lärarförbundet | Teknisk IT-projektledare (via Claremont)
+Januari 2014 - Maj 2014.
+Teknisk projektledare och koordinator för lansering av lararforbundet.se.
+Relevant för: Projektledning, Digital transformation.
+
+FMV - Försvarets Materielverk | Application Relocation Project Manager (via Claremont)
+April 2013 - Januari 2014.
+EVRY:s projektledare för transition av FMV:s serverdrift från CGI till EVRY.
+Säkerhetskritisk miljö, tre-parts-relation.
+Relevant för: Projektledning, Integrations-PM.
+
+Rikspolisstyrelsen | Teknisk Systemledare (via Claremont)
+Juni 2011 - September 2012.
+Teknisk systemledare för Adobe LiveCycle-plattform för interaktiva formulär
+och processhantering.
+Relevant för: Integrations-PM, Projektledning.
+
+Bonnier Magazines & Brands | IT-projektledare (via Claremont)
+November 2010 - Juni 2011.
+IT-projektledare för migrering av tidningssajter till EPiServer CMS.
+Relevant för: Projektledning, Digital transformation.
 
 Bombardier Transportation | Projektledare (konsult via verynicepeople)
 Januari 2010 - September 2010.
-Leverantörens projektledare för leverans av nytt tågledningssystem för regionaltåg
-i norra Sverige till Trafikverket. Detta är ett separat uppdrag från den tidiga
-karriären på Bombardier 1993-2001 och ska aldrig slås ihop med det.
-Relevant för: Järnväg, Projektledning, Plattformsstrategi, Integrations-PM.
+Leverantörens projektledare för leverans av nytt tågledningssystem för
+regionaltåg i norra Sverige till Trafikverket. SEPARAT uppdrag från
+den tidiga karriären på Bombardier 1995-2000, ska aldrig slås ihop.
+Relevant för: Järnväg, Projektledning, Integrations-PM.
 
-Bombardier Transportation | Systemansvarig och projektledare (anställd)
-1993 - 2001.
-Ansvarig för tågledningssystem för Stockholms tågledningscentral samt
-projektledare inom Arlandabanan. Detta är den tidiga karriären och ett helt
-separat uppdrag från konsultuppdraget 2010.
+verynicepeople | Founder
+Oktober 2006 - December 2009.
+Eget konsultbolag.
+
+GroupM | Nordic IT Project Manager (via verynicepeople)
+Oktober 2006 - November 2008.
+Dubbelt mandat för AdMaker, självbetjäningsplattform för rekryteringsannonsering.
+Stabiliserade drift för live-plattform parallellt med upphandling och implementation
+av ny plattform. Nordiska mediebyrånätverk.
+Relevant för: Produktledning, Plattformsstrategi, Digital transformation.
+
+Active Solution | IT-projektledare & Team-/Operativ Ledare
+November 2000 - Oktober 2006.
+Microsoft-baserade IT-lösningar. Kunder: Telia, Lernia, ASSA Abloy, DeLaval,
+Bausch & Lomb.
+Relevant för: Projektledning, Digital transformation.
+
+Bombardier Transportation Signal AB | Application Manager & IT-projektledare (anställd)
+Mars 1995 - November 2000.
+Application Manager för tågledningssystem för Stockholms tågledningscentral
+(fjärrtåg). IT-projektledare inom Arlandabanan: implementation i tågledningssystem,
+passagerarinformationssystem och ursystem. SEPARAT uppdrag från
+konsultuppdraget 2010, ska aldrig slås ihop.
 Relevant för: Järnväg, Projektledning, Interims-CTO.
-
-AARO Systems | Product Manager & Team Coach
-Tidig skalningsfas för produktbolag. Identifierade och löste otydliga prioriteringar,
-avsaknad av gemensam utvärderingsmodell och bristande alignment.
-Definierade WoW-principer och byggde konkret prioriteringsverktyg för underhållsarbete.
-Resultat: starkare alignment, tydligare prioriteringar, frigjord tid för
-framåtblickande produktarbete.
-Relevant för: Produktledning, Agil coach, Digital transformation.
-
-Wasa Kredit | Application Manager IT
-Teknisk transformation i compliance-tung finansmiljö. Fokus på att omsätta
-processförbättringar i konkreta leveranser.
-Relevant för: Integrations-PM, Digital transformation, Interims-CTO.
 
 ## REFERENSER
 
