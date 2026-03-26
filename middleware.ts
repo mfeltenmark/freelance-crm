@@ -8,7 +8,7 @@ export default auth((req) => {
   const publicRoutes = ['/login']
   const isPublicRoute = publicRoutes.includes(pathname)
   const isAuthApi = pathname.startsWith('/api/auth')
-  const isWebhookApi = pathname.startsWith('/api/webhooks') || pathname.startsWith('/api/bookings')
+  const isWebhookApi = pathname.startsWith('/api/webhooks') || pathname.startsWith('/api/bookings') || pathname.startsWith('/api/transcripts')
 
   if (isPublicRoute || isAuthApi || isWebhookApi) {
     if (isLoggedIn && pathname === '/login') {
@@ -27,5 +27,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/((?!api/contacts|api/card|api/bookings|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api/contacts|api/card|api/bookings|api/transcripts|_next/static|_next/image|favicon.ico).*)'],
 }
