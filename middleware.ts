@@ -8,9 +8,14 @@ export default auth((req) => {
   const publicRoutes = ['/login']
   const isPublicRoute = publicRoutes.includes(pathname)
   const isAuthApi = pathname.startsWith('/api/auth')
-  const isWebhookApi = pathname.startsWith('/api/webhooks') || pathname.startsWith('/api/bookings') || pathname.startsWith('/api/transcripts')
+  const isUnprotectedApi =
+    pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/api/bookings') ||
+    pathname.startsWith('/api/transcripts') ||
+    pathname.startsWith('/api/contacts') ||
+    pathname.startsWith('/api/card')
 
-  if (isPublicRoute || isAuthApi || isWebhookApi) {
+  if (isPublicRoute || isAuthApi || isUnprotectedApi) {
     if (isLoggedIn && pathname === '/login') {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
@@ -27,5 +32,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/((?!api/contacts|api/card|api/bookings|api/transcripts|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
