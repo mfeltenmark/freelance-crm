@@ -145,7 +145,7 @@ export default function CVGeneratorPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-100 rounded-xl p-5">
           <div className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
             Kravprofil / uppdragsbeskrivning
@@ -158,7 +158,7 @@ export default function CVGeneratorPage() {
             style={{ fontFamily: 'inherit' }}
           />
 
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 mt-4">
             {[
               { label: 'CV-riktning', value: riktning, setter: setRiktning, options: RIKTNINGAR },
               { label: 'Språk', value: sprak, setter: setSprak, options: ['Svenska', 'Engelska'] },
@@ -194,7 +194,7 @@ export default function CVGeneratorPage() {
 
           <div className="mt-4">
             <div className="text-xs text-gray-400 font-medium mb-2">AI-modell</div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full">
               {(['sonnet', 'opus'] as const).map(m => (
                 <button
                   key={m}
@@ -281,11 +281,11 @@ export default function CVGeneratorPage() {
             )}
           </div>
 
-          <div className="flex gap-2 mt-3">
+          <div className="flex flex-col sm:flex-row gap-2 mt-3">
             <button
               onClick={handleDownloadPDF}
               disabled={!cvData}
-              className="flex-1 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg border font-medium disabled:opacity-30 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg border font-medium disabled:opacity-30 transition-colors w-full"
               style={{ borderColor: '#5e3a8c', color: '#5e3a8c' }}
             >
               <Download size={13} /> Ladda ned
