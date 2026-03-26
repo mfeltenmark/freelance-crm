@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth-edge'
 
 const unprotectedPaths = [
   '/login',
@@ -15,15 +14,18 @@ function isUnprotected(pathname: string): boolean {
   return unprotectedPaths.some(path => pathname.startsWith(path))
 }
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (isUnprotected(pathname)) {
     return NextResponse.next()
   }
 
-  const session = await auth()
-  if (!session) {
+  const sessionToken =
+    request.cookies.get('__Secure-authjs.session-token') ??
+    request.cookies.get('authjs.session-token')
+
+  if (!sessionToken) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)
