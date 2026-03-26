@@ -5,7 +5,7 @@ import { readAllCVFiles, getMasterPrompt } from '@/lib/google-drive-cv'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model } = body
+    const { kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag } = body
 
     if (!kravprofil?.trim()) {
       return NextResponse.json({ error: 'Kravprofil saknas' }, { status: 400 })
@@ -27,6 +27,7 @@ Längd: ${langd}
 Ton: ${ton}
 Lyft fram: ${lyttFram}
 Övriga instruktioner: ${ovriga || 'Inga'}
+Antal uppdrag att lista i CV:t: ${antalUppdrag || '5'} (lista exakt detta antal, varken fler eller färre)
 
 CV-DATABAS (dina befintliga CV-filer):
 ${cvDatabaseText || 'Inga CV-filer hittades i databasen. Använd enbart master-prompten.'}
@@ -64,6 +65,7 @@ ${cvDatabaseText || 'Inga CV-filer hittades i databasen. Använd enbart master-p
     try {
       const cleaned = rawText.replace(/```json|```/g, '').trim()
       cvData = JSON.parse(cleaned)
+      cvData.language = sprak
     } catch {
       return NextResponse.json({ error: 'Kunde inte parsa CV-data', raw: rawText }, { status: 500 })
     }

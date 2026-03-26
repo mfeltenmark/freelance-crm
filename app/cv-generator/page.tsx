@@ -10,6 +10,7 @@ const RIKTNINGAR = [
   'Agil coach',
   'Integrations-PM',
   'Interims-CTO',
+  'Interim Head of Product',
   'Projektledning / PM',
 ]
 
@@ -34,6 +35,7 @@ export default function CVGeneratorPage() {
   const [langd, setLangd] = useState('Standard 2 sidor')
   const [ton, setTon] = useState('Direkt och affärsnära')
   const [lyttFram, setLyttFram] = useState('Automatiskt')
+  const [antalUppdrag, setAntalUppdrag] = useState('5')
   const [ovriga, setOvriga] = useState('')
   const [model, setModel] = useState<'sonnet' | 'opus'>('sonnet')
   const [loading, setLoading] = useState(false)
@@ -63,7 +65,7 @@ export default function CVGeneratorPage() {
       const res = await fetch('/api/cv/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model }),
+        body: JSON.stringify({ kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -161,9 +163,10 @@ export default function CVGeneratorPage() {
               { label: 'CV-riktning', value: riktning, setter: setRiktning, options: RIKTNINGAR },
               { label: 'Språk', value: sprak, setter: setSprak, options: ['Svenska', 'Engelska'] },
               { label: 'Fokus', value: fokus, setter: setFokus, options: ['Balanserat', 'Strategisk tyngd', 'Teknisk tyngd'] },
-              { label: 'Längd', value: langd, setter: setLangd, options: ['Standard 2 sidor', 'Kompakt 1 sida'] },
+              { label: 'Längd', value: langd, setter: setLangd, options: ['Standard 2 sidor', 'Kompakt 1 sida', 'Lång 3 sidor'] },
               { label: 'Ton', value: ton, setter: setTon, options: ['Direkt och affärsnära', 'Formell'] },
               { label: 'Lyft fram', value: lyttFram, setter: setLyttFram, options: ['Automatiskt', 'Plattformsstrategi', 'Digital transformation', 'Produktledning', 'Ledarskap', 'Förändringsledning'] },
+              { label: 'Antal uppdrag', value: antalUppdrag, setter: setAntalUppdrag, options: ['3', '4', '5', '6', '7'] },
             ].map(({ label, value, setter, options }) => (
               <div key={label}>
                 <label className="block text-xs text-gray-400 font-medium mb-1">{label}</label>

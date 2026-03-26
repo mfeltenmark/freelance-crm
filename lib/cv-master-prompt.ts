@@ -55,6 +55,14 @@ under övergångsperioder.
 Nyckelord: teknisk ledning, CTO, interim, tech strategi, teambyggnad,
 teknisk skuld, arkitekturstyrning.
 
+RIKTNING: Interim Head of Product
+Positionering: Senior produktledare som axlar interimistiskt ansvar för produktfunktionen
+i organisationer som behöver stabilitet, riktning och skalning av produktarbetet under
+övergångsperioder. Kombinerar strategiskt produkttänk med hands-on leveransförmåga och
+förmåga att snabbt sätta sig in i befintlig produktportfölj och team.
+Nyckelord: Head of Product, VP Product, produktstrategi, roadmap ownership, produktorganisation,
+team leadership, OKR, go-to-market, revenue ownership, produktvision, skalning, CPO, interim.
+
 RIKTNING: Projektledning / PM
 Positionering: Erfaren projektledare och programledare som driver komplexa leveranser
 i tid, budget och scope i enterprise-miljö. Kombinerar strukturerad projektmetodik med

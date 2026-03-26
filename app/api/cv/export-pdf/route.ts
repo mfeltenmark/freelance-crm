@@ -5,7 +5,7 @@ const purple = '#5e3a8c'
 export async function POST(req: NextRequest) {
   try {
     const { cv } = await req.json()
-    const html = buildCVHtml(cv)
+    const html = buildCVHtml(cv, cv.language)
     return new NextResponse(html, {
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     })
@@ -15,7 +15,22 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function buildCVHtml(cv: any): string {
+function buildCVHtml(cv: any, language?: string): string {
+  const t = language === 'Engelska' ? {
+    competencies: 'Core Competencies',
+    engagements: 'Experience',
+    education: 'Education',
+    certifications: 'Certifications',
+    languages: 'Languages',
+    references: 'Client Testimonials',
+  } : {
+    competencies: 'Kärnkompetenser',
+    engagements: 'Uppdragshistorik',
+    education: 'Utbildning',
+    certifications: 'Certifieringar',
+    languages: 'Språk',
+    references: 'Vad kunder säger',
+  }
   return `<!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -68,12 +83,12 @@ function buildCVHtml(cv: any): string {
   <hr class="divider">
   <p class="tagline">${cv.tagline}</p>
 
-  <div class="section-title">Kärnkompetenser</div>
+  <div class="section-title">${t.competencies}</div>
   <div class="competencies">
     ${cv.competencies.map((c: string) => `<span class="competency">${c}</span>`).join('')}
   </div>
 
-  <div class="section-title">Uppdragshistorik</div>
+  <div class="section-title">${t.engagements}</div>
   ${cv.engagements.map((e: any) => `
     <div class="engagement no-break">
       <div class="engagement-header">
@@ -86,25 +101,25 @@ function buildCVHtml(cv: any): string {
     <hr class="thin-divider">
   `).join('')}
 
-  <div class="section-title">Utbildning</div>
+  <div class="section-title">${t.education}</div>
   ${cv.education.map((e: any) => `
     <div class="education-item">${e.degree}, ${e.school}${e.year ? ` (${e.year})` : ''}</div>
   `).join('')}
 
   ${cv.certifications?.length ? `
-    <div class="section-title">Certifieringar</div>
+    <div class="section-title">${t.certifications}</div>
     ${cv.certifications.map((c: any) => `
       <div class="cert-item">${c.name} - ${c.issuer}, ${c.year}</div>
     `).join('')}
   ` : ''}
 
   ${cv.languages?.length ? `
-    <div class="section-title">Språk</div>
+    <div class="section-title">${t.languages}</div>
     <div class="languages">${cv.languages.map((l: any) => `${l.language}: ${l.level}`).join('&nbsp;&nbsp;&bull;&nbsp;&nbsp;')}</div>
   ` : ''}
 
   ${cv.references?.length ? `
-    <div class="section-title">Vad kunder säger</div>
+    <div class="section-title">${t.references}</div>
     ${cv.references.map((r: any) => `
       <div class="reference no-break">
         <div class="reference-quote">"${r.quote}"</div>
