@@ -21,8 +21,11 @@ function formatDescription(text: string): string {
     .split('\n')
     .map(line => {
       const trimmed = line.trim()
-      if (trimmed.match(/^(Resultat|Result)\s*:/i)) {
-        return `</div><div class="result-label">${trimmed}</div><div class="engagement-desc">`
+      const match = trimmed.match(/^(Resultat|Result)\s*:/i)
+      if (match) {
+        const label = match[0]
+        const rest = trimmed.slice(label.length)
+        return `</div><div class="engagement-desc" style="margin-top:6px;"><span style="font-weight:700;color:${purple};">${label}</span><span style="color:#333;">${rest}</span>`
       }
       return line
     })
