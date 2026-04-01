@@ -21,11 +21,8 @@ function formatDescription(text: string): string {
     .split('\n')
     .map(line => {
       const trimmed = line.trim()
-      const match = trimmed.match(/^(Resultat|Result)\s*:/i)
-      if (match) {
-        const label = match[0]
-        const rest = trimmed.slice(label.length)
-        return `</div><div class="result-label">${label}</div><div class="engagement-desc">${rest}`
+      if (trimmed.match(/^(Resultat|Result)\s*:/i)) {
+        return `</div><div class="result-label">${trimmed}</div><div class="engagement-desc">`
       }
       return line
     })
@@ -80,7 +77,7 @@ function buildCVHtml(cv: any, language?: string): string {
   .engagement-period { font-size: 9pt; color: #777; }
   .engagement-role { font-size: 9.5pt; color: ${purple}; margin-bottom: 3px; }
   .engagement-desc { font-size: 9.5pt; color: #333; line-height: 1.5; }
-  .result-label { font-size: 9pt; font-weight: 700; color: ${purple}; margin-top: 6px; margin-bottom: 2px; }
+  .result-label { font-size: 9pt; font-weight: 400; color: ${purple}; margin-top: 6px; margin-bottom: 2px; }
   .reference { border-left: 2px solid ${purple}; padding-left: 10px; margin-bottom: 10px; }
   .reference-quote { font-size: 9.5pt; font-style: italic; color: #333; line-height: 1.55; }
   .reference-name { font-size: 9pt; font-weight: 700; color: #111; margin-top: 3px; }
