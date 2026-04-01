@@ -38,6 +38,7 @@ export default function CVGeneratorPage() {
   const [antalUppdrag, setAntalUppdrag] = useState('5')
   const [ovriga, setOvriga] = useState('')
   const [model, setModel] = useState<'sonnet' | 'opus'>('sonnet')
+  const [inputMode, setInputMode] = useState<'kravprofil' | 'befintlig'>('kravprofil')
   const [loading, setLoading] = useState(false)
   const [cvData, setCvData] = useState<CVData | null>(null)
   const [error, setError] = useState('')
@@ -65,7 +66,7 @@ export default function CVGeneratorPage() {
       const res = await fetch('/api/cv/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag }),
+        body: JSON.stringify({ kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag, inputMode }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -147,13 +148,40 @@ export default function CVGeneratorPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-100 rounded-xl p-5">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
-            Kravprofil / uppdragsbeskrivning
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+              {inputMode === 'kravprofil' ? 'Kravprofil / uppdragsbeskrivning' : 'Befintlig CV-text'}
+            </div>
+            <div className="flex rounded-lg overflow-hidden border border-gray-100 text-xs">
+              <button
+                onClick={() => setInputMode('kravprofil')}
+                className="px-3 py-1.5 transition-colors"
+                style={inputMode === 'kravprofil'
+                  ? { background: '#5e3a8c', color: '#fff' }
+                  : { background: '#f9fafb', color: '#9ca3af' }
+                }
+              >
+                Kravprofil
+              </button>
+              <button
+                onClick={() => setInputMode('befintlig')}
+                className="px-3 py-1.5 transition-colors"
+                style={inputMode === 'befintlig'
+                  ? { background: '#5e3a8c', color: '#fff' }
+                  : { background: '#f9fafb', color: '#9ca3af' }
+                }
+              >
+                Befintlig CV-text
+              </button>
+            </div>
           </div>
           <textarea
             value={kravprofil}
             onChange={e => setKravprofil(e.target.value)}
-            placeholder="Klistra in kravprofil, jobbannons eller uppdragsbeskrivning här..."
+            placeholder={inputMode === 'kravprofil'
+              ? 'Klistra in kravprofil, jobbannons eller uppdragsbeskrivning här...'
+              : 'Klistra in en befintlig CV-text som ska användas som bas...'
+            }
             className="w-full h-48 text-sm text-gray-800 bg-gray-50 border border-gray-100 rounded-lg p-3 resize-none focus:outline-none focus:border-purple-400"
             style={{ fontFamily: 'inherit' }}
           />

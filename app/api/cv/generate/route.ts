@@ -5,7 +5,7 @@ import { readAllCVFiles, getMasterPrompt } from '@/lib/google-drive-cv'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag } = body
+    const { kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag, inputMode } = body
 
     if (!kravprofil?.trim()) {
       return NextResponse.json({ error: 'Kravprofil saknas' }, { status: 400 })
@@ -15,7 +15,29 @@ export async function POST(req: NextRequest) {
     const customMasterPrompt = await getMasterPrompt()
     const masterPrompt = customMasterPrompt || CV_MASTER_PROMPT
 
-    const userMessage = `
+    const userMessage = inputMode === 'befintlig'
+      ? `
+DU FÅR EN BEFINTLIG CV-TEXT SOM MALL.
+Din uppgift är att:
+1. Bevara strukturen, tonen och innehållet från den inmatade texten så nära som möjligt
+2. Formatera om den till rätt JSON-struktur enligt formatet i systemprompten
+3. Komplettera med information från CV-databasen om något saknas eller kan förbättras
+4. Anpassa språk till: ${sprak}
+
+BEFINTLIG CV-TEXT:
+${kravprofil}
+
+ANVÄNDARENS VAL:
+CV-riktning: ${riktning}
+Språk: ${sprak}
+Längd: ${langd}
+Antal uppdrag: ${antalUppdrag || '5'}
+Övriga instruktioner: ${ovriga || 'Inga'}
+
+CV-DATABAS (för eventuell komplettering):
+${cvDatabaseText || 'Inga CV-filer hittades.'}
+`
+      : `
 KRAVPROFIL / UPPDRAGSBESKRIVNING:
 ${kravprofil}
 
@@ -26,8 +48,8 @@ Fokus: ${fokus}
 Längd: ${langd}
 Ton: ${ton}
 Lyft fram: ${lyttFram}
+Antal uppdrag att lista: ${antalUppdrag || '5'} (lista exakt detta antal)
 Övriga instruktioner: ${ovriga || 'Inga'}
-Antal uppdrag att lista i CV:t: ${antalUppdrag || '5'} (lista exakt detta antal, varken fler eller färre)
 
 CV-DATABAS (dina befintliga CV-filer):
 ${cvDatabaseText || 'Inga CV-filer hittades i databasen. Använd enbart master-prompten.'}
