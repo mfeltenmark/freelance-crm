@@ -25,7 +25,7 @@ function formatDescription(text: string): string {
       if (match) {
         const label = match[0]
         const rest = trimmed.slice(label.length)
-        return `</div><div class="engagement-desc" style="margin-top:6px;"><span style="font-weight:700;color:${purple};">${label}</span><span style="color:#333;">${rest}</span>`
+        return `</div><div class="result-label">${label}</div><div class="engagement-desc">${rest}`
       }
       return line
     })
