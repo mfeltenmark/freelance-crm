@@ -60,11 +60,13 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [showStageDropdown, setShowStageDropdown] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showAddActivity, setShowAddActivity] = useState(false)
+  const [showAddTask, setShowAddTask] = useState(false)
   const [editingNextStep, setEditingNextStep] = useState(false)
   const [nextStepText, setNextStepText] = useState('')
   const [nextStepDate, setNextStepDate] = useState('')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['lead', id],
     queryFn: async () => {
       const res = await fetch(`/api/leads/${id}`)
@@ -371,9 +373,11 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           <div className="card">
             <div className="card-header flex items-center justify-between">
               <h3 className="font-semibold text-gray-900">Aktiviteter</h3>
-              <button className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1">
-                <Plus className="w-4 h-4" />
-                Lägg till
+              <button
+                onClick={() => setShowAddActivity(true)}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                + Lägg till
               </button>
             </div>
             <div className="card-body">
@@ -415,9 +419,11 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           <div className="card">
             <div className="card-header flex items-center justify-between">
               <h3 className="font-semibold text-gray-900">Tasks</h3>
-              <button className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1">
-                <Plus className="w-4 h-4" />
-                Lägg till
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                + Lägg till
               </button>
             </div>
             <div className="card-body">
@@ -647,6 +653,93 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Redigera lead</h3>
             <EditLeadForm lead={lead} onClose={() => setShowEditModal(false)} onSaved={() => { setShowEditModal(false); queryClient.invalidateQueries({ queryKey: ['lead', id] }) }} />
+          </div>
+        </div>
+      )}
+
+      {/* Add activity modal */}
+      {showAddActivity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowAddActivity(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4">Logga aktivitet</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const fd = new FormData(e.currentTarget)
+              await fetch('/api/activities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: fd.get('type'),
+                  subject: fd.get('subject'),
+                  description: fd.get('description'),
+                  activityDate: fd.get('activityDate'),
+                  leadId: lead.id,
+                  contactId: lead.contact?.id,
+                })
+              })
+              setShowAddActivity(false)
+              refetch()
+            }}>
+              <div className="space-y-3">
+                <select name="type" required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="EMAIL">Mail</option>
+                  <option value="LINKEDIN">LinkedIn</option>
+                  <option value="SMS">SMS</option>
+                  <option value="CALL">Telefon</option>
+                  <option value="NOTE">Anteckning</option>
+                </select>
+                <input name="subject" placeholder="Ämne" required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <textarea name="description" placeholder="Vad hände? Notera pris, scope, nästa steg..." rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                <input name="activityDate" type="datetime-local" required defaultValue={new Date().toISOString().slice(0,16)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button type="button" onClick={() => setShowAddActivity(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm">Avbryt</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Spara</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add task modal */}
+      {showAddTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowAddTask(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4">Lägg till task</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const fd = new FormData(e.currentTarget)
+              await fetch('/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: fd.get('title'),
+                  description: fd.get('description'),
+                  dueDate: fd.get('dueDate'),
+                  priority: fd.get('priority'),
+                  leadId: lead.id,
+                })
+              })
+              setShowAddTask(false)
+              refetch()
+            }}>
+              <div className="space-y-3">
+                <input name="title" placeholder="Vad ska göras?" required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <textarea name="description" placeholder="Mer detaljer..." rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                <input name="dueDate" type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <select name="priority" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="LOW">Låg prioritet</option>
+                  <option value="MEDIUM">Medium prioritet</option>
+                  <option value="HIGH">Hög prioritet</option>
+                </select>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button type="button" onClick={() => setShowAddTask(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm">Avbryt</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Spara</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
