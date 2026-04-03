@@ -673,7 +673,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                   type: fd.get('type'),
                   subject: fd.get('subject'),
                   description: fd.get('description'),
-                  activityDate: fd.get('activityDate'),
+                  activityDate: new Date(fd.get('activityDate') as string).toISOString(),
                   leadId: lead.id,
                   contactId: lead.contact?.id,
                 })
