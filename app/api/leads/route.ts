@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const stage = searchParams.get('stage') as LeadStage | null
     const status = searchParams.get('status')
     const search = searchParams.get('search')
+    const source = searchParams.get('source')
     const sortBy = searchParams.get('sortBy') || 'updatedAt'
     const sortOrder = searchParams.get('sortOrder') || 'desc'
     const limit = parseInt(searchParams.get('limit') || '50')
@@ -20,6 +21,10 @@ export async function GET(request: NextRequest) {
     
     if (stage) {
       where.stage = stage
+    }
+
+    if (source) {
+      where.source = source
     }
     
     if (status) {
@@ -114,6 +119,7 @@ export async function POST(request: NextRequest) {
       source,
       expectedCloseDate,
       companyId,
+      contactId,
       tags,
     } = body
 
@@ -134,6 +140,7 @@ export async function POST(request: NextRequest) {
         source,
         expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate) : null,
         companyId,
+        contactId: contactId || undefined,
         tags: tags || [],
         firstContactDate: new Date(),
       },

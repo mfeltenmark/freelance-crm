@@ -64,6 +64,7 @@ const stages = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATING', 'CLO
 export default function LeadsPage() {
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState<string | null>(null)
+  const [sourceFilter, setSourceFilter] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showClosed, setShowClosed] = useState(false)
   const searchParams = useSearchParams()
@@ -76,11 +77,12 @@ export default function LeadsPage() {
   }, [searchParams])
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['leads', search, stageFilter, showClosed],
+    queryKey: ['leads', search, stageFilter, sourceFilter, showClosed],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (stageFilter) params.set('stage', stageFilter)
+      if (sourceFilter) params.set('source', sourceFilter)
       if (showClosed) params.set('status', 'ALL')
       
       const res = await fetch(`/api/leads?${params}`)
@@ -212,6 +214,28 @@ export default function LeadsPage() {
         >
           {showClosed ? '✓ Visar avslutade' : 'Visa avslutade'}
         </button>
+
+        <div className="flex gap-2">
+          {[
+            { value: null, label: 'Alla' },
+            { value: 'bookme', label: 'BookMe' },
+            { value: 'cv-request', label: 'CV-förfrågan' },
+            { value: 'manual', label: 'Manuell' },
+          ].map(f => (
+            <button
+              key={f.label}
+              onClick={() => setSourceFilter(f.value)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs font-medium transition-colors',
+                sourceFilter === f.value
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
 
         {stageFilter && (
           <button
