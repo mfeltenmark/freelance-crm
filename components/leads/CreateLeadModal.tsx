@@ -17,7 +17,7 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
     closeProbability: '50',
     contactId: '',
     requirementText: '',
-    source: 'manual',
+    source: 'recruiter',
     expectedCloseDate: '',
   })
 
@@ -152,6 +152,7 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
                 <option value="website">Hemsida</option>
                 <option value="cold_outreach">Kall kontakt</option>
                 <option value="event">Event/Konferens</option>
+                <option value="recruiter">Konsultmäklare</option>
                 <option value="other">Annat</option>
               </select>
             </div>

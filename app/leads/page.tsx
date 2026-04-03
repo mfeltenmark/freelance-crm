@@ -220,6 +220,7 @@ export default function LeadsPage() {
             { value: null, label: 'Alla' },
             { value: 'bookme', label: 'BookMe' },
             { value: 'cv-request', label: 'CV-förfrågan' },
+            { value: 'recruiter', label: 'Konsultmäklare' },
             { value: 'manual', label: 'Manuell' },
           ].map(f => (
             <button
