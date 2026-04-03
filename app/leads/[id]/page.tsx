@@ -688,11 +688,13 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
             }}>
               <div className="space-y-3">
                 <select name="type" required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                  <option value="EMAIL">Mail</option>
+                  <option value="EMAIL_SENT">Mail (skickat)</option>
+                  <option value="EMAIL_RECEIVED">Mail (mottaget)</option>
                   <option value="LINKEDIN">LinkedIn</option>
                   <option value="SMS">SMS</option>
                   <option value="CALL">Telefon</option>
                   <option value="NOTE">Anteckning</option>
+                  <option value="MEETING">Möte</option>
                 </select>
                 <input name="subject" placeholder="Ämne" required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                 <textarea name="description" placeholder="Vad hände? Notera pris, scope, nästa steg..." rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />

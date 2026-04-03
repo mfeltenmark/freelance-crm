@@ -35,6 +35,8 @@ enum ActivityType {
   MEETING
   NOTE
   TASK
+  SMS
+  LINKEDIN
 }
 
 enum ProposalStatus {
