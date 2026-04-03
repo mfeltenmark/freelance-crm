@@ -24,7 +24,7 @@ export async function findTranscriptForMeeting(scheduledAt: Date): Promise<strin
 
     const windowStart = new Date(scheduledAt.getTime() - 60 * 60 * 1000).toISOString()
     const windowEnd   = new Date(scheduledAt.getTime() + 4 * 60 * 60 * 1000).toISOString()
-    const query = `name contains 'Meeting started' and mimeType = 'application/vnd.google-apps.document' and trashed = false and createdTime > '${windowStart}' and createdTime < '${windowEnd}'`
+    const query = `name contains 'Notes by Gemini' and mimeType = 'application/vnd.google-apps.document' and trashed = false and createdTime > '${windowStart}' and createdTime < '${windowEnd}'`
 
     const res = await drive.files.list({
       q: query,
