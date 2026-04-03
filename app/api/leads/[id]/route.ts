@@ -33,6 +33,7 @@ export async function GET(
         proposals: {
           orderBy: { createdAt: 'desc' },
         },
+        transcript: true,
       },
     })
 

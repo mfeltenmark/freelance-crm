@@ -424,8 +424,8 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               {lead.tasks?.length > 0 ? (
                 <div className="space-y-2">
                   {lead.tasks.map((task: any) => (
-                    <div 
-                      key={task.id} 
+                    <div
+                      key={task.id}
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50"
                     >
                       <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
@@ -453,6 +453,16 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               )}
             </div>
           </div>
+
+          {/* Transcript */}
+          {lead.transcript && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Mötesanteckningar</h3>
+              <div className="bg-gray-50 rounded-lg p-4 whitespace-pre-wrap text-sm text-gray-700">
+                {lead.transcript.rawText}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right column - Sidebar */}

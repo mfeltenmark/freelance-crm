@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   const now = new Date()
+  console.log('Poll started, now:', now.toISOString())
 
   const leads = await prisma.lead.findMany({
     where: {
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
     },
     select: { id: true, scheduledAt: true, durationMinutes: true },
   })
+  console.log('Leads found:', JSON.stringify(leads))
 
   const eligibleLeads = leads.filter(lead => {
     const endTime = new Date(
@@ -28,6 +30,7 @@ export async function GET(request: NextRequest) {
     )
     return now > endTime
   })
+  console.log('Eligible leads:', JSON.stringify(eligibleLeads))
 
   const results = { processed: 0, found: 0, errors: 0 }
 

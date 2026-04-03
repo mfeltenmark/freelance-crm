@@ -31,9 +31,13 @@ export async function findTranscriptForMeeting(scheduledAt: Date): Promise<strin
       fields: 'files(id, name, createdTime)',
       spaces: 'drive',
       orderBy: 'createdTime desc',
+      includeItemsFromAllDrives: true,
+      supportsAllDrives: true,
     })
 
     const files = res.data.files
+    console.log('Drive search query:', query)
+    console.log('Drive search results:', JSON.stringify(files))
     if (!files || files.length === 0) return null
 
     return files[0].id!
@@ -49,27 +53,40 @@ export async function readTranscriptFromDoc(fileId: string): Promise<string | nu
     const docs = google.docs({ version: 'v1', auth })
 
     const doc = await docs.documents.get({ documentId: fileId })
+
+    // Try tabs first (newer docs format)
     const tabs = doc.data.tabs
-    if (!tabs) return null
+    if (tabs && tabs.length > 0) {
+      const transcriptTab =
+        tabs.find(tab =>
+          tab.tabProperties?.title?.toLowerCase() === 'transcript'
+        ) ??
+        tabs.find(tab =>
+          tab.tabProperties?.title?.toLowerCase().includes('transcript')
+        ) ??
+        tabs[0]
 
-    const transcriptTab =
-      tabs.find(tab =>
-        tab.tabProperties?.title?.toLowerCase() === 'transcript'
-      ) ??
-      tabs.find(tab =>
-        tab.tabProperties?.title?.toLowerCase().includes('transcript')
-      )
+      if (transcriptTab) {
+        const content = transcriptTab.documentTab?.body?.content ?? []
+        const text = content
+          .flatMap(el => el.paragraph?.elements ?? [])
+          .map(e => e.textRun?.content ?? '')
+          .join('')
+          .trim()
+        if (text) return text
+      }
+    }
 
-    if (!transcriptTab) return null
-
-    const content = transcriptTab.documentTab?.body?.content ?? []
+    // Fall back to body directly (older/simpler docs format)
+    const content = doc.data.body?.content ?? []
     return content
       .flatMap(el => el.paragraph?.elements ?? [])
       .map(e => e.textRun?.content ?? '')
       .join('')
       .trim() || null
+
   } catch (err) {
-    console.error(`readTranscriptFromDoc error for fileId ${fileId}:`, err)
+    console.error('readTranscriptFromDoc error:', err)
     return null
   }
 }
