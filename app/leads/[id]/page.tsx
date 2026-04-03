@@ -666,7 +666,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
             <form onSubmit={async (e) => {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
-              await fetch('/api/activities', {
+              const res = await fetch('/api/activities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -678,6 +678,11 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                   contactId: lead.contact?.id,
                 })
               })
+              if (!res.ok) {
+                const err = await res.json()
+                alert('Fel: ' + JSON.stringify(err))
+                return
+              }
               setShowAddActivity(false)
               refetch()
             }}>
