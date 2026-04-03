@@ -62,11 +62,11 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">Skapa ny lead</h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 rounded"
           >
@@ -75,8 +75,8 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="px-6 py-4 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
             {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -198,7 +198,7 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
