@@ -401,7 +401,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-gray-500">
-                                {formatDistance(new Date(activity.activityDate), new Date(), {
+                                {formatDistance(new Date(activity.createdAt), new Date(), {
                                   addSuffix: true,
                                   locale: sv
                                 })}
@@ -799,7 +799,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                   type: fd.get('type'),
                   subject: fd.get('subject'),
                   description: fd.get('description'),
-                  activityDate: new Date(fd.get('activityDate') as string).toISOString(),
+                  activityDate: new Date().toISOString(),
                   leadId: lead.id,
                   contactId: lead.contact?.id,
                 })
@@ -824,7 +824,6 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 </select>
                 <input name="subject" placeholder="Ämne" required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                 <textarea name="description" placeholder="Vad hände? Notera pris, scope, nästa steg..." rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
-                <input name="activityDate" type="datetime-local" required defaultValue={new Date().toISOString().slice(0,16)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
               </div>
               <div className="flex gap-2 mt-4">
                 <button type="button" onClick={() => setShowAddActivity(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm">Avbryt</button>
