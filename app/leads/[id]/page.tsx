@@ -62,6 +62,8 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAddActivity, setShowAddActivity] = useState(false)
   const [showAddTask, setShowAddTask] = useState(false)
+  const [editTask, setEditTask] = useState<any>(null)
+  const [editActivity, setEditActivity] = useState<any>(null)
   const [editingNextStep, setEditingNextStep] = useState(false)
   const [nextStepText, setNextStepText] = useState('')
   const [nextStepDate, setNextStepDate] = useState('')
@@ -397,12 +399,20 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                               <p className="font-medium text-gray-900">{activity.subject || activity.type}</p>
                               <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
                             </div>
-                            <span className="text-xs text-gray-500">
-                              {formatDistance(new Date(activity.activityDate), new Date(), { 
-                                addSuffix: true, 
-                                locale: sv 
-                              })}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">
+                                {formatDistance(new Date(activity.activityDate), new Date(), {
+                                  addSuffix: true,
+                                  locale: sv
+                                })}
+                              </span>
+                              <button
+                                onClick={() => setEditActivity(activity)}
+                                className="text-gray-400 hover:text-gray-600 text-xs ml-2"
+                              >
+                                Redigera
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -434,7 +444,19 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                       key={task.id}
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50"
                     >
-                      <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
+                      <input
+                        type="checkbox"
+                        checked={task.status === 'COMPLETED'}
+                        onChange={async () => {
+                          await fetch(`/api/tasks/${task.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED' })
+                          })
+                          refetch()
+                        }}
+                        className="w-4 h-4 rounded border-gray-300"
+                      />
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">{task.title}</p>
                         {task.dueDate && (
@@ -451,6 +473,12 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                       )}>
                         {task.priority === 'high' ? 'Hög' : task.priority === 'medium' ? 'Medel' : 'Låg'}
                       </span>
+                      <button
+                        onClick={() => setEditTask(task)}
+                        className="text-gray-400 hover:text-gray-600 text-xs ml-2"
+                      >
+                        Redigera
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -645,6 +673,104 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* Edit task modal */}
+      {editTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setEditTask(null)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4">Redigera task</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const fd = new FormData(e.currentTarget)
+              await fetch(`/api/tasks/${editTask.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: fd.get('title'),
+                  description: fd.get('description'),
+                  dueDate: fd.get('dueDate') || null,
+                  priority: fd.get('priority'),
+                })
+              })
+              setEditTask(null)
+              refetch()
+            }}>
+              <div className="space-y-3">
+                <input name="title" defaultValue={editTask.title} required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <textarea name="description" defaultValue={editTask.description || ''} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                <input name="dueDate" type="date" defaultValue={editTask.dueDate ? editTask.dueDate.slice(0,10) : ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <select name="priority" defaultValue={editTask.priority} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="LOW">Låg</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">Hög</option>
+                </select>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button type="button" onClick={async () => {
+                  if (confirm('Ta bort task?')) {
+                    await fetch(`/api/tasks/${editTask.id}`, { method: 'DELETE' })
+                    setEditTask(null)
+                    refetch()
+                  }
+                }} className="px-4 py-2 text-red-600 border border-red-200 rounded-lg text-sm">Ta bort</button>
+                <button type="button" onClick={() => setEditTask(null)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm">Avbryt</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Spara</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit activity modal */}
+      {editActivity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setEditActivity(null)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4">Redigera aktivitet</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const fd = new FormData(e.currentTarget)
+              await fetch(`/api/activities/${editActivity.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  subject: fd.get('subject'),
+                  description: fd.get('description'),
+                  type: fd.get('type'),
+                })
+              })
+              setEditActivity(null)
+              refetch()
+            }}>
+              <div className="space-y-3">
+                <select name="type" defaultValue={editActivity.type} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="EMAIL_SENT">Mail (skickat)</option>
+                  <option value="EMAIL_RECEIVED">Mail (mottaget)</option>
+                  <option value="LINKEDIN">LinkedIn</option>
+                  <option value="SMS">SMS</option>
+                  <option value="CALL">Telefon</option>
+                  <option value="NOTE">Anteckning</option>
+                  <option value="MEETING">Möte</option>
+                </select>
+                <input name="subject" defaultValue={editActivity.subject || ''} placeholder="Ämne" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <textarea name="description" defaultValue={editActivity.description || ''} rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button type="button" onClick={async () => {
+                  if (confirm('Ta bort aktivitet?')) {
+                    await fetch(`/api/activities/${editActivity.id}`, { method: 'DELETE' })
+                    setEditActivity(null)
+                    refetch()
+                  }
+                }} className="px-4 py-2 text-red-600 border border-red-200 rounded-lg text-sm">Ta bort</button>
+                <button type="button" onClick={() => setEditActivity(null)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm">Avbryt</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Spara</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Edit modal */}
       {showEditModal && (
