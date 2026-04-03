@@ -269,7 +269,7 @@ export default function TasksPage() {
               const isOverdue = dueDate && isPast(dueDate) && !isToday(dueDate) && task.status !== 'done'
               const isDueToday = dueDate && isToday(dueDate)
               const isDueTomorrow = dueDate && isTomorrow(dueDate)
-              const priority = priorityConfig[task.priority]
+              const priority = priorityConfig[task.priority?.toLowerCase()] ?? priorityConfig['low']
               const isDone = task.status === 'done'
 
               return (
