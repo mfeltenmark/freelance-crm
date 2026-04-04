@@ -37,6 +37,7 @@ enum ActivityType {
   TASK
   SMS
   LINKEDIN
+  CV_SENT
 }
 
 enum ProposalStatus {

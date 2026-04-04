@@ -8,9 +8,9 @@ export async function POST(req: NextRequest) {
     const content = JSON.stringify(cv, null, 2)
     const safeName = filename || `CV_Mikael_Feltenmark_${new Date().toISOString().split('T')[0]}.json`
 
-    await saveGeneratedCV(safeName, content)
+    const webViewLink = await saveGeneratedCV(safeName, content)
 
-    return NextResponse.json({ success: true, filename: safeName })
+    return NextResponse.json({ success: true, filename: safeName, webViewLink })
   } catch (error) {
     console.error('Save to Drive error:', error)
     return NextResponse.json({ error: 'Kunde inte spara till Drive' }, { status: 500 })

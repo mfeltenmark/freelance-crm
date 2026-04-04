@@ -47,6 +47,8 @@ export default function CVGeneratorPage() {
   const [savingPrompt, setSavingPrompt] = useState(false)
   const [driveFiles, setDriveFiles] = useState<{ total: number; raw: any[]; generated: any[] }>({ total: 0, raw: [], generated: [] })
   const [savedToDrive, setSavedToDrive] = useState(false)
+  const [driveLink, setDriveLink] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     fetch('/api/cv/drive-files')
@@ -101,7 +103,9 @@ export default function CVGeneratorPage() {
       body: JSON.stringify({ cv: cvData, filename }),
     })
     if (res.ok) {
+      const data = await res.json()
       setSavedToDrive(true)
+      if (data.webViewLink) setDriveLink(data.webViewLink)
       const updated = await fetch('/api/cv/drive-files').then(r => r.json())
       setDriveFiles(updated)
     }
@@ -326,6 +330,19 @@ export default function CVGeneratorPage() {
             >
               <Save size={13} /> {savedToDrive ? 'Sparat' : 'Spara till Drive'}
             </button>
+            {savedToDrive && driveLink && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(driveLink)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                style={{ borderColor: '#e5e7eb', color: copied ? '#16a34a' : '#7c3aed' }}
+                className="flex items-center gap-1 px-3 py-1.5 border rounded text-xs"
+              >
+                {copied ? '✓ Kopierad!' : 'Kopiera Drive-länk'}
+              </button>
+            )}
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-100">

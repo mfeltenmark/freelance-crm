@@ -62,6 +62,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAddActivity, setShowAddActivity] = useState(false)
   const [showAddTask, setShowAddTask] = useState(false)
+  const [showLogCV, setShowLogCV] = useState(false)
   const [editTask, setEditTask] = useState<any>(null)
   const [editActivity, setEditActivity] = useState<any>(null)
   const [editingNextStep, setEditingNextStep] = useState(false)
@@ -671,8 +672,87 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               )}
             </div>
           </div>
+
+          {/* CV-logg */}
+          <div className="mt-6">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Skickat CV</h3>
+            <button
+              onClick={() => setShowLogCV(true)}
+              className="w-full px-4 py-2 border border-purple-200 text-purple-600 rounded-lg text-sm font-medium hover:bg-purple-50"
+            >
+              + Logga skickat CV
+            </button>
+            {lead.activities?.filter((a: any) => a.type === 'CV_SENT').map((a: any) => (
+              <div key={a.id} className="mt-2 p-3 bg-gray-50 rounded-lg text-sm">
+                <p className="text-gray-600">{a.description}</p>
+                {a.subject && (
+                  <a href={a.subject} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline text-xs mt-1 block truncate">
+                    {a.subject}
+                  </a>
+                )}
+                <p className="text-xs text-gray-400 mt-1">{formatDistance(new Date(a.createdAt), new Date(), { addSuffix: true, locale: sv })}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Log CV modal */}
+      {showLogCV && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowLogCV(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4">Logga skickat CV</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const fd = new FormData(e.currentTarget)
+              await fetch('/api/activities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: 'CV_SENT',
+                  subject: fd.get('driveLink'),
+                  description: fd.get('note'),
+                  activityDate: new Date().toISOString(),
+                  leadId: lead.id,
+                  contactId: lead.contact?.id,
+                })
+              })
+              await fetch(`/api/leads/${lead.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stage: 'CONTACTED' })
+              })
+              setShowLogCV(false)
+              refetch()
+            }}>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Drive-länk</label>
+                  <input
+                    name="driveLink"
+                    placeholder="Klistra in länk till CV..."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notering</label>
+                  <textarea
+                    name="note"
+                    placeholder="t.ex. Anpassat CV fokus på DevOps, skickat till Diana"
+                    rows={3}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button type="button" onClick={() => setShowLogCV(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm">Avbryt</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Logga</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Edit task modal */}
       {editTask && (

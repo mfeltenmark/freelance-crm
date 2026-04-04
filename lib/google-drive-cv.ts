@@ -159,10 +159,9 @@ export async function saveMasterPrompt(content: string): Promise<void> {
   }
 }
 
-export async function saveGeneratedCV(filename: string, content: string): Promise<void> {
+export async function saveGeneratedCV(filename: string, content: string): Promise<string | null> {
   const drive = getDriveClient()
 
-  const generatedFiles = await listCVFiles('generated')
   const foldersRes = await drive.files.list({
     q: `'${FOLDER_ID}' in parents and name = 'generated' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
     fields: 'files(id)',
@@ -173,13 +172,16 @@ export async function saveGeneratedCV(filename: string, content: string): Promis
   const generatedFolderId = foldersRes.data.files?.[0]?.id
   if (!generatedFolderId) throw new Error('generated-mappen hittades inte i Drive')
 
-  await drive.files.create({
+  const res = await drive.files.create({
     requestBody: {
       name: filename,
       parents: [generatedFolderId],
       mimeType: 'text/plain',
     },
     media: { mimeType: 'text/plain', body: content },
+    fields: 'id, webViewLink',
     supportsAllDrives: true,
   })
+
+  return res.data.webViewLink ?? null
 }
