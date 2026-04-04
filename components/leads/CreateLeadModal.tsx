@@ -94,16 +94,16 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
               />
             </div>
 
-            {/* Description */}
+            {/* Description / Kravprofil */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Beskrivning
+                Beskrivning / Kravprofil
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Beskriv uppdraget..."
-                rows={3}
+                placeholder="Klistra in kravprofil från mail eller LinkedIn, eller beskriv uppdraget..."
+                rows={6}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent resize-none"
               />
             </div>
@@ -172,18 +172,6 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
                   <option key={c.id} value={c.id}>{c.firstName} {c.lastName}</option>
                 ))}
               </select>
-            </div>
-
-            {/* Requirement text */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kravprofil</label>
-              <textarea
-                value={formData.requirementText}
-                onChange={e => setFormData(p => ({ ...p, requirementText: e.target.value }))}
-                rows={6}
-                placeholder="Klistra in kravprofil från mail eller LinkedIn..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
-              />
             </div>
 
             {/* Instructions */}
