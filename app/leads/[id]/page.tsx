@@ -27,6 +27,7 @@ import { sv } from 'date-fns/locale'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { DrivePicker } from '@/components/leads/DrivePicker'
 
 interface LeadDetailProps {
   params: Promise<{ id: string }>
@@ -63,6 +64,8 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [showAddActivity, setShowAddActivity] = useState(false)
   const [showAddTask, setShowAddTask] = useState(false)
   const [showLogCV, setShowLogCV] = useState(false)
+  const [showDrivePicker, setShowDrivePicker] = useState(false)
+  const [cvFile, setCvFile] = useState<{ name: string; url: string } | null>(null)
   const [editTask, setEditTask] = useState<any>(null)
   const [editActivity, setEditActivity] = useState<any>(null)
   const [editingNextStep, setEditingNextStep] = useState(false)
@@ -697,6 +700,16 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
         </div>
       </div>
 
+      {showDrivePicker && (
+        <DrivePicker
+          onPicked={(file) => {
+            setCvFile(file)
+            setShowDrivePicker(false)
+          }}
+          onClose={() => setShowDrivePicker(false)}
+        />
+      )}
+
       {/* Log CV modal */}
       {showLogCV && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -729,11 +742,16 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Drive-länk</label>
-                  <input
-                    name="driveLink"
-                    placeholder="Klistra in länk till CV..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDrivePicker(true)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm text-left text-gray-500 hover:bg-gray-50"
+                  >
+                    {cvFile ? cvFile.name : '📁 Välj PDF från Google Drive...'}
+                  </button>
+                  {cvFile && (
+                    <input type="hidden" name="driveLink" value={cvFile.url} />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Notering</label>
