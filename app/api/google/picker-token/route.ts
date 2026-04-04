@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server'
-import { google } from 'googleapis'
+import { auth } from '@/lib/auth'
 
 export async function GET() {
   try {
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '{}')
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-    })
-    const client = await auth.getClient()
-    const tokenResponse = await (client as any).getAccessToken()
-    return NextResponse.json({ accessToken: tokenResponse.token })
+    const session = await auth()
+    const accessToken = (session as any)?.accessToken
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    return NextResponse.json({ accessToken })
   } catch (error) {
-    console.error('Picker token error:', error)
     return NextResponse.json({ error: 'Failed to get token' }, { status: 500 })
   }
 }
