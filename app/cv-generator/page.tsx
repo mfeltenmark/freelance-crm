@@ -161,7 +161,7 @@ export default function CVGeneratorPage() {
               </div>
               <button
                 onClick={async () => {
-                  const res = await fetch('/api/leads?status=active&limit=20')
+                  const res = await fetch('/api/leads?limit=50')
                   const data = await res.json()
                   setLeads(data.leads ?? [])
                   setShowLeadPicker(true)
