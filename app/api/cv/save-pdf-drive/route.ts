@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
 
     const browser = await puppeteer.default.launch({
       args: chromium.default.args,
-      defaultViewport: chromium.default.defaultViewport,
       executablePath: await chromium.default.executablePath(
         'https://github.com/Sparticuz/chromium/releases/download/v143.0.0/chromium-v143.0.0-pack.tar'
       ),
