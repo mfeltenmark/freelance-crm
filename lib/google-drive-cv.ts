@@ -176,9 +176,9 @@ export async function saveGeneratedCV(filename: string, content: string): Promis
     requestBody: {
       name: filename,
       parents: [generatedFolderId],
-      mimeType: 'text/plain',
+      mimeType: 'text/html',
     },
-    media: { mimeType: 'text/plain', body: content },
+    media: { mimeType: 'text/html', body: content },
     fields: 'id, webViewLink',
     supportsAllDrives: true,
   })

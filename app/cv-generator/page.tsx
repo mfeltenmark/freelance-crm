@@ -96,11 +96,19 @@ export default function CVGeneratorPage() {
 
   async function handleSaveToDrive() {
     if (!cvData) return
-    const filename = `CV_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.json`
+    const filename = `CV_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.html`
+
+    const htmlRes = await fetch('/api/cv/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cv: cvData }),
+    })
+    const html = await htmlRes.text()
+
     const res = await fetch('/api/cv/save-drive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cv: cvData, filename }),
+      body: JSON.stringify({ html, filename }),
     })
     if (res.ok) {
       const data = await res.json()
