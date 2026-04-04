@@ -120,6 +120,7 @@ export async function POST(request: NextRequest) {
       expectedCloseDate,
       companyId,
       contactId,
+      instructions,
       tags,
     } = body
 
@@ -141,6 +142,7 @@ export async function POST(request: NextRequest) {
         expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate) : null,
         companyId,
         contactId: contactId || undefined,
+        instructions: instructions || undefined,
         tags: tags || [],
         firstContactDate: new Date(),
       },

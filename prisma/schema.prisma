@@ -54,7 +54,8 @@ model Lead {
   id                  String      @id @default(cuid())
   title               String
   description         String?     @db.Text
-  
+  instructions        String?     @db.Text
+
   // Pipeline
   stage               LeadStage   @default(NEW)
   status              LeadStatus  @default(ACTIVE)

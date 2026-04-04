@@ -46,6 +46,8 @@ export default function CVGeneratorPage() {
   const [masterPrompt, setMasterPrompt] = useState('')
   const [savingPrompt, setSavingPrompt] = useState(false)
   const [driveFiles, setDriveFiles] = useState<{ total: number; raw: any[]; generated: any[] }>({ total: 0, raw: [], generated: [] })
+  const [showLeadPicker, setShowLeadPicker] = useState(false)
+  const [leads, setLeads] = useState<any[]>([])
   const [savedToDrive, setSavedToDrive] = useState(false)
   const [driveLink, setDriveLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -153,8 +155,21 @@ export default function CVGeneratorPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-100 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-              {inputMode === 'kravprofil' ? 'Kravprofil / uppdragsbeskrivning' : 'Befintlig CV-text'}
+            <div className="flex items-center gap-2">
+              <div className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                {inputMode === 'kravprofil' ? 'Kravprofil / uppdragsbeskrivning' : 'Befintlig CV-text'}
+              </div>
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/leads?status=active&limit=20')
+                  const data = await res.json()
+                  setLeads(data.leads ?? [])
+                  setShowLeadPicker(true)
+                }}
+                className="px-3 py-1.5 border border-purple-200 text-purple-600 rounded text-xs hover:bg-purple-50"
+              >
+                Hämta från lead
+              </button>
             </div>
             <div className="flex rounded-lg overflow-hidden border border-gray-100 text-xs">
               <button
@@ -399,6 +414,44 @@ export default function CVGeneratorPage() {
                 <span key={r} className="text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">{r}</span>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {showLeadPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowLeadPicker(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4">Välj lead</h3>
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {leads.map((lead: any) => (
+                <button
+                  key={lead.id}
+                  onClick={() => {
+                    if (lead.description) setKravprofil(lead.description)
+                    if (lead.instructions) setOvriga(lead.instructions)
+                    setShowLeadPicker(false)
+                  }}
+                  className="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-200"
+                >
+                  <p className="font-medium text-sm text-gray-900">{lead.title}</p>
+                  {lead.contact && (
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {lead.contact.firstName} {lead.contact.lastName}
+                    </p>
+                  )}
+                </button>
+              ))}
+              {leads.length === 0 && (
+                <p className="text-gray-500 text-sm text-center py-4">Inga aktiva leads hittades</p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowLeadPicker(false)}
+              className="mt-4 w-full px-4 py-2 border border-gray-200 rounded-lg text-sm"
+            >
+              Avbryt
+            </button>
           </div>
         </div>
       )}

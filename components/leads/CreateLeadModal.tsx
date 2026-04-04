@@ -17,6 +17,7 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
     closeProbability: '50',
     contactId: '',
     requirementText: '',
+    instructions: '',
     source: 'recruiter',
     expectedCloseDate: '',
   })
@@ -38,6 +39,7 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
           ...data,
           description: data.requirementText || data.description,
           contactId: data.contactId || undefined,
+          instructions: data.instructions || undefined,
         }),
       })
       if (!res.ok) throw new Error('Failed to create lead')
@@ -180,6 +182,18 @@ export function CreateLeadModal({ onClose, onCreated }: CreateLeadModalProps) {
                 onChange={e => setFormData(p => ({ ...p, requirementText: e.target.value }))}
                 rows={6}
                 placeholder="Klistra in kravprofil från mail eller LinkedIn..."
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+              />
+            </div>
+
+            {/* Instructions */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Övriga instruktioner</label>
+              <textarea
+                value={formData.instructions}
+                onChange={e => setFormData(p => ({ ...p, instructions: e.target.value }))}
+                rows={3}
+                placeholder="t.ex. fokusera på DevOps, max 2 sidor, svenska..."
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
               />
             </div>
