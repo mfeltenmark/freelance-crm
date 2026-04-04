@@ -176,7 +176,7 @@ export async function saveGeneratedCV(filename: string, content: string): Promis
     requestBody: {
       name: filename,
       parents: [generatedFolderId],
-      mimeType: 'text/html',
+      mimeType: 'application/vnd.google-apps.document',
     },
     media: { mimeType: 'text/html', body: content },
     fields: 'id, webViewLink',
