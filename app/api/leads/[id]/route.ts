@@ -77,6 +77,7 @@ export async function PATCH(
       isPaid,
       nextStep,
       nextStepDate,
+      instructions,
     } = body
 
     // Build update data
@@ -102,6 +103,7 @@ export async function PATCH(
     if (isPaid !== undefined) updateData.isPaid = isPaid
     if (nextStep !== undefined) updateData.nextStep = nextStep || null
     if (nextStepDate !== undefined) updateData.nextStepDate = nextStepDate ? new Date(nextStepDate) : null
+    if (instructions !== undefined) updateData.instructions = instructions
 
     // Update lastActivityDate
     updateData.lastActivityDate = new Date()

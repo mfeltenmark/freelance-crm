@@ -375,6 +375,17 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
             </div>
           )}
 
+          {lead.instructions && (
+            <div className="card">
+              <div className="card-header">
+                <h3 className="font-semibold text-gray-900">Övriga instruktioner</h3>
+              </div>
+              <div className="card-body">
+                <p className="text-gray-600 whitespace-pre-wrap">{lead.instructions}</p>
+              </div>
+            </div>
+          )}
+
           {/* Activities */}
           <div className="card">
             <div className="card-header flex items-center justify-between">
@@ -1003,6 +1014,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
 function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => void; onSaved: () => void }) {
   const [title, setTitle] = useState(lead.title || '')
   const [description, setDescription] = useState(lead.description || '')
+  const [instructions, setInstructions] = useState(lead.instructions || '')
   const [estimatedValue, setEstimatedValue] = useState(lead.estimatedValue?.toString() || '')
   const [closeProbability, setCloseProbability] = useState(lead.closeProbability?.toString() || '50')
   const [expectedCloseDate, setExpectedCloseDate] = useState(lead.expectedCloseDate ? lead.expectedCloseDate.split('T')[0] : '')
@@ -1017,6 +1029,7 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
       body: JSON.stringify({
         title,
         description,
+        instructions,
         estimatedValue: estimatedValue ? parseFloat(estimatedValue) : null,
         closeProbability: closeProbability ? parseInt(closeProbability, 10) : null,
         expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate).toISOString() : null,
@@ -1036,6 +1049,10 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Beskrivning</label>
         <textarea className="input w-full" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Övriga instruktioner</label>
+        <textarea className="input w-full" rows={3} value={instructions} onChange={e => setInstructions(e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
