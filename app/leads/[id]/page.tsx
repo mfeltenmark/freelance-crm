@@ -1012,6 +1012,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
 }
 
 function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => void; onSaved: () => void }) {
+  const router = useRouter()
   const [title, setTitle] = useState(lead.title || '')
   const [description, setDescription] = useState(lead.description || '')
   const [instructions, setInstructions] = useState(lead.instructions || '')
@@ -1021,8 +1022,7 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
   const [source, setSource] = useState(lead.source || '')
   const [saving, setSaving] = useState(false)
 
-  const handleSave = async () => {
-    setSaving(true)
+  const patchLead = async () => {
     await fetch(`/api/leads/${lead.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -1036,8 +1036,20 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
         source,
       }),
     })
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    await patchLead()
     setSaving(false)
     onSaved()
+  }
+
+  const handleSaveAndGenerate = async () => {
+    setSaving(true)
+    await patchLead()
+    setSaving(false)
+    router.push(`/cv-generator?leadId=${lead.id}`)
   }
 
   return (
@@ -1080,8 +1092,15 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button onClick={onClose} className="btn-secondary">Avbryt</button>
-        <button onClick={handleSave} disabled={saving} className="btn-primary">
+        <button onClick={handleSave} disabled={saving} className="btn-secondary disabled:opacity-50">
           {saving ? 'Sparar...' : 'Spara'}
+        </button>
+        <button
+          onClick={handleSaveAndGenerate}
+          disabled={saving || !title || !description}
+          className="btn-primary disabled:opacity-50"
+        >
+          {saving ? 'Sparar...' : 'Spara och generera CV'}
         </button>
       </div>
     </div>
