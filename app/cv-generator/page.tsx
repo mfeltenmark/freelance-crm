@@ -68,7 +68,8 @@ export default function CVGeneratorPage() {
 
     fetch(`/api/leads/${leadId}`)
       .then(r => r.json())
-      .then(async (lead) => {
+      .then(async (data) => {
+        const lead = data.lead || data
         const desc = lead.description ?? ''
         const instr = lead.instructions ?? ''
         if (desc) setKravprofil(desc)
