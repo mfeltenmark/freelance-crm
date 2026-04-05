@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Download, Settings, RefreshCw, Save, X, FileText } from 'lucide-react'
 
 const RIKTNINGAR = [
@@ -51,11 +52,57 @@ export default function CVGeneratorPage() {
   const [savedToDrive, setSavedToDrive] = useState(false)
   const [driveLink, setDriveLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [suggestingSettings, setSuggestingSettings] = useState(false)
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     fetch('/api/cv/drive-files')
       .then(r => r.json())
       .then(setDriveFiles)
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const leadId = searchParams.get('leadId')
+    if (!leadId) return
+
+    fetch(`/api/leads/${leadId}`)
+      .then(r => r.json())
+      .then(async (lead) => {
+        const desc = lead.description ?? ''
+        const instr = lead.instructions ?? ''
+        if (desc) setKravprofil(desc)
+        if (instr) setOvriga(instr)
+
+        if (desc) {
+          setSuggestingSettings(true)
+          try {
+            const res = await fetch('/api/cv-generator/suggest-settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ description: desc, instructions: instr }),
+            })
+            const suggestions = await res.json()
+
+            const riktningOptions = [
+              'Produktledning / CPO', 'Digital transformation', 'Plattformsstrategi',
+              'Agil coach', 'Integrations-PM', 'Interims-CTO', 'Interim Head of Product', 'Projektledning / PM',
+            ]
+            const fokusOptions = ['Balanserat', 'Strategisk tyngd', 'Teknisk tyngd']
+            const tonOptions = ['Direkt och affärsnära', 'Formell']
+            const lyftOptions = ['Automatiskt', 'Plattformsstrategi', 'Digital transformation', 'Produktledning', 'Ledarskap', 'Förändringsledning']
+
+            if (suggestions.riktning && riktningOptions.includes(suggestions.riktning)) setRiktning(suggestions.riktning)
+            if (suggestions.fokus && fokusOptions.includes(suggestions.fokus)) setFokus(suggestions.fokus)
+            if (suggestions.ton && tonOptions.includes(suggestions.ton)) setTon(suggestions.ton)
+            if (suggestions.lyft && lyftOptions.includes(suggestions.lyft)) setLyttFram(suggestions.lyft)
+          } catch {
+            // tyst fel, behåll defaults
+          } finally {
+            setSuggestingSettings(false)
+          }
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -205,7 +252,15 @@ export default function CVGeneratorPage() {
             style={{ fontFamily: 'inherit' }}
           />
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 mt-4">
+          <div className="flex items-center gap-2 mt-4 mb-1">
+            <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">Inställningar</span>
+            {suggestingSettings && (
+              <span className="flex items-center gap-1 text-xs text-purple-500">
+                <RefreshCw size={10} className="animate-spin" /> Föreslår...
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
             {[
               { label: 'CV-riktning', value: riktning, setter: setRiktning, options: RIKTNINGAR },
               { label: 'Språk', value: sprak, setter: setSprak, options: ['Svenska', 'Engelska'] },
