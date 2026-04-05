@@ -9,6 +9,7 @@ const unprotectedPaths = [
   '/api/contacts',
   '/api/card',
   '/api/gmail/poll',
+  '/api/mail-signals',
 ]
 
 function isUnprotected(pathname: string): boolean {
