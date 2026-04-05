@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { X, ChevronDown, ChevronUp } from 'lucide-react'
 
@@ -14,6 +15,7 @@ interface CreateLeadModalProps {
   onClose: () => void
   onCreated: () => void
   initialData?: InitialData
+  mailSignalId?: string
 }
 
 type Contact = { id: string; firstName: string; lastName: string; email?: string }
@@ -23,7 +25,8 @@ function extractEmail(from: string): string {
   return match ? match[1].toLowerCase() : from.toLowerCase().trim()
 }
 
-export function CreateLeadModal({ onClose, onCreated, initialData }: CreateLeadModalProps) {
+export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId }: CreateLeadModalProps) {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     title: initialData?.title ?? '',
     description: initialData?.description ?? '',
@@ -71,8 +74,19 @@ export function CreateLeadModal({ onClose, onCreated, initialData }: CreateLeadM
       if (!res.ok) throw new Error('Failed to create lead')
       return res.json()
     },
-    onSuccess: () => {
-      onCreated()
+    onSuccess: async (newLead) => {
+      if (mailSignalId) {
+        await fetch(`/api/mail-signals/${mailSignalId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'processed' }),
+        })
+      }
+      if (formData.title && formData.description && formData.instructions) {
+        router.push(`/cv-generator?leadId=${newLead.id}`)
+      } else {
+        onCreated()
+      }
     },
   })
 
