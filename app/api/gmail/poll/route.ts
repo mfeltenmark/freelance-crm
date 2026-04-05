@@ -2,6 +2,28 @@ import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { prisma } from '@/lib/db'
 
+function extractBody(payload: any): string {
+  if (!payload) return ''
+
+  if (payload.body?.data) {
+    return Buffer.from(payload.body.data, 'base64url').toString('utf-8')
+  }
+
+  if (payload.parts) {
+    for (const part of payload.parts) {
+      if (part.mimeType === 'text/plain' && part.body?.data) {
+        return Buffer.from(part.body.data, 'base64url').toString('utf-8')
+      }
+    }
+    for (const part of payload.parts) {
+      const result = extractBody(part)
+      if (result) return result
+    }
+  }
+
+  return ''
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -43,7 +65,7 @@ export async function GET(request: Request) {
       const headers = full.data.payload?.headers || []
       const from = headers.find(h => h.name === 'From')?.value || ''
       const subject = headers.find(h => h.name === 'Subject')?.value || ''
-      const body = full.data.snippet || ''
+      const body = extractBody(full.data.payload) || full.data.snippet || ''
 
       await prisma.mailSignal.create({
         data: {
