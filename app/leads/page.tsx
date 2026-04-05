@@ -67,12 +67,28 @@ export default function LeadsPage() {
   const [sourceFilter, setSourceFilter] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showClosed, setShowClosed] = useState(false)
+  const [mailSignalInitialData, setMailSignalInitialData] = useState<{ title?: string; description?: string; from?: string } | undefined>(undefined)
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (searchParams.get('new') === '1') {
+    const newParam = searchParams.get('new')
+    const mailSignalId = searchParams.get('mailSignalId')
+
+    if (newParam === '1') {
       setShowCreateModal(true)
       window.history.replaceState({}, '', '/leads')
+    } else if (mailSignalId) {
+      fetch(`/api/mail-signals/${mailSignalId}`)
+        .then(r => r.json())
+        .then(signal => {
+          setMailSignalInitialData({
+            title: signal.subject ?? '',
+            description: signal.body ?? '',
+            from: signal.from ?? '',
+          })
+          setShowCreateModal(true)
+          window.history.replaceState({}, '', '/leads')
+        })
     }
   }, [searchParams])
 
@@ -402,12 +418,14 @@ export default function LeadsPage() {
 
       {/* Create modal */}
       {showCreateModal && (
-        <CreateLeadModal 
-          onClose={() => setShowCreateModal(false)} 
+        <CreateLeadModal
+          onClose={() => { setShowCreateModal(false); setMailSignalInitialData(undefined) }}
           onCreated={() => {
             setShowCreateModal(false)
+            setMailSignalInitialData(undefined)
             refetch()
           }}
+          initialData={mailSignalInitialData}
         />
       )}
     </div>

@@ -46,7 +46,7 @@ export default function DashboardPage() {
             {pendingSignals.map((signal: any) => (
               <a
                 key={signal.id}
-                href="#"
+                href={`/leads?mailSignalId=${signal.id}`}
                 className="card p-4 flex items-start gap-4 hover:bg-gray-50 transition-colors block"
               >
                 <div className="flex-1 min-w-0">
