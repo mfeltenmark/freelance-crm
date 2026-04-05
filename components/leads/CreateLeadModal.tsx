@@ -59,6 +59,8 @@ export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId 
       })
   }, [])
 
+  const [navigateAfterSave, setNavigateAfterSave] = useState(false)
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const res = await fetch('/api/leads', {
@@ -82,7 +84,7 @@ export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId 
           body: JSON.stringify({ status: 'processed' }),
         })
       }
-      if (formData.title && formData.description && formData.instructions) {
+      if (navigateAfterSave) {
         router.push(`/cv-generator?leadId=${newLead.id}`)
       } else {
         onCreated()
@@ -90,8 +92,15 @@ export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId 
     },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleDraft = (e: React.FormEvent) => {
     e.preventDefault()
+    setNavigateAfterSave(false)
+    createMutation.mutate(formData)
+  }
+
+  const handleSaveAndGenerate = (e: React.FormEvent) => {
+    e.preventDefault()
+    setNavigateAfterSave(true)
     createMutation.mutate(formData)
   }
 
@@ -117,7 +126,7 @@ export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId 
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        <form className="flex flex-col flex-1 min-h-0">
           <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
 
             {/* Row 1: Titel + Kontakt */}
@@ -248,11 +257,20 @@ export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId 
               Avbryt
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleDraft}
               disabled={createMutation.isPending || !formData.title}
+              className="btn-secondary disabled:opacity-50"
+            >
+              {createMutation.isPending && !navigateAfterSave ? 'Sparar...' : 'Spara som draft'}
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveAndGenerate}
+              disabled={createMutation.isPending || !formData.title || !formData.description}
               className="btn-primary disabled:opacity-50"
             >
-              {createMutation.isPending ? 'Skapar...' : 'Skapa lead'}
+              {createMutation.isPending && navigateAfterSave ? 'Sparar...' : 'Spara och generera CV'}
             </button>
           </div>
         </form>
