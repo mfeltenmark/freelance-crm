@@ -85,7 +85,7 @@ export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId 
         })
       }
       if (navigateAfterSave) {
-        router.push(`/cv-generator?leadId=${newLead.id}`)
+        router.push(`/cv-generator?leadId=${newLead.lead.id}`)
       } else {
         onCreated()
       }
