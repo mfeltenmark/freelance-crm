@@ -6,7 +6,14 @@ export async function GET(request: NextRequest) {
     const status = request.nextUrl.searchParams.get('status')
 
     const signals = await prisma.mailSignal.findMany({
-      where: status ? { status } : undefined,
+      where: {
+        status: status || 'pending',
+        NOT: {
+          from: {
+            contains: 'techchange.io',
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
       take: 20,
     })
