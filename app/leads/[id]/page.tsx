@@ -20,7 +20,9 @@ import {
   FileText,
   MessageSquare,
   Video,
-  Plus
+  Plus,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import { format, formatDistance } from 'date-fns'
 import { sv } from 'date-fns/locale'
@@ -1021,6 +1023,7 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
   const [expectedCloseDate, setExpectedCloseDate] = useState(lead.expectedCloseDate ? lead.expectedCloseDate.split('T')[0] : '')
   const [source, setSource] = useState(lead.source || '')
   const [saving, setSaving] = useState(false)
+  const [showExtra, setShowExtra] = useState(false)
 
   const patchLead = async () => {
     await fetch(`/api/leads/${lead.id}`, {
@@ -1066,29 +1069,44 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
         <label className="block text-sm font-medium text-gray-700 mb-1">Övriga instruktioner</label>
         <textarea className="input w-full" rows={3} value={instructions} onChange={e => setInstructions(e.target.value)} />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Uppskattat värde (SEK)</label>
-          <input className="input w-full" type="number" value={estimatedValue} onChange={e => setEstimatedValue(e.target.value)} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Sannolikhet (%)</label>
-          <input className="input w-full" type="number" min="0" max="100" value={closeProbability} onChange={e => setCloseProbability(e.target.value)} />
-        </div>
-      </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Förväntat avslut</label>
-        <input className="input w-full" type="date" value={expectedCloseDate} onChange={e => setExpectedCloseDate(e.target.value)} />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Källa</label>
-        <select className="input w-full" value={source} onChange={e => setSource(e.target.value)}>
-          <option value="">Välj källa</option>
-          <option value="bookme">BookMe</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="referral">Referral</option>
-          <option value="other">Annat</option>
-        </select>
+        <button
+          type="button"
+          onClick={() => setShowExtra(p => !p)}
+          className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600"
+        >
+          {showExtra ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {showExtra ? 'Dölj detaljer' : 'Visa detaljer (värde, sannolikhet, datum, källa)'}
+        </button>
+        {showExtra && (
+          <div className="mt-3 space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Uppskattat värde (SEK)</label>
+                <input className="input w-full" type="number" value={estimatedValue} onChange={e => setEstimatedValue(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sannolikhet (%)</label>
+                <input className="input w-full" type="number" min="0" max="100" value={closeProbability} onChange={e => setCloseProbability(e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Förväntat avslut</label>
+              <input className="input w-full" type="date" value={expectedCloseDate} onChange={e => setExpectedCloseDate(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Källa</label>
+              <select className="input w-full" value={source} onChange={e => setSource(e.target.value)}>
+                <option value="">Välj källa</option>
+                <option value="bookme">BookMe</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="referral">Referral</option>
+                <option value="recruiter">Konsultmäklare</option>
+                <option value="other">Annat</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button onClick={onClose} className="btn-secondary">Avbryt</button>
