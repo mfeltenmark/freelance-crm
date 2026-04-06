@@ -1184,6 +1184,9 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
                 <option value="linkedin">LinkedIn</option>
                 <option value="referral">Referral</option>
                 <option value="recruiter">Konsultmäklare</option>
+                <option value="ework">Ework</option>
+                <option value="sj_manpower">SJ/Manpower</option>
+                <option value="developersbay">DevelopersBay</option>
                 <option value="other">Annat</option>
               </select>
             </div>

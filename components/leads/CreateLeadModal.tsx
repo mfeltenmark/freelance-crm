@@ -233,6 +233,9 @@ export function CreateLeadModal({ onClose, onCreated, initialData, mailSignalId 
                         <option value="cold_outreach">Kall kontakt</option>
                         <option value="event">Event/Konferens</option>
                         <option value="recruiter">Konsultmäklare</option>
+                        <option value="ework">Ework</option>
+                        <option value="sj_manpower">SJ/Manpower</option>
+                        <option value="developersbay">DevelopersBay</option>
                         <option value="other">Annat</option>
                       </select>
                     </div>
