@@ -23,6 +23,7 @@ export async function POST(
       leadId,
       type: 'EMAIL_SENT',
       description: `Kompletteringsmail skickat till ${to}: ${subject}`,
+      activityDate: new Date(),
     },
   })
 
