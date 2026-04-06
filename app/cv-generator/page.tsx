@@ -53,6 +53,9 @@ export default function CVGeneratorPage() {
   const [driveLink, setDriveLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [suggestingSettings, setSuggestingSettings] = useState(false)
+  const [includeCoverLetter, setIncludeCoverLetter] = useState(false)
+  const [coverLetter, setCoverLetter] = useState('')
+  const [coverLetterCopied, setCoverLetterCopied] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -112,6 +115,7 @@ export default function CVGeneratorPage() {
     setLoading(true)
     setError('')
     setCvData(null)
+    setCoverLetter('')
     setSavedToDrive(false)
 
     try {
@@ -123,6 +127,16 @@ export default function CVGeneratorPage() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setCvData(data.cv)
+
+      if (includeCoverLetter) {
+        const clRes = await fetch('/api/cv-generator/generate-cover-letter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: kravprofil, instructions: ovriga, riktning, model }),
+        })
+        const clData = await clRes.json()
+        if (clData.coverLetter) setCoverLetter(clData.coverLetter)
+      }
     } catch (e: any) {
       setError(e.message || 'Något gick fel')
     } finally {
@@ -293,6 +307,18 @@ export default function CVGeneratorPage() {
                 className="w-full text-sm text-gray-800 bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400"
               />
             </div>
+
+            <div className="col-span-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeCoverLetter}
+                  onChange={e => setIncludeCoverLetter(e.target.checked)}
+                  className="w-4 h-4 rounded accent-purple-600"
+                />
+                <span className="text-xs text-gray-500 font-medium">Generera motivering / hisspitch</span>
+              </label>
+            </div>
           </div>
 
           <div className="mt-4">
@@ -383,6 +409,28 @@ export default function CVGeneratorPage() {
               </div>
             )}
           </div>
+
+          {includeCoverLetter && coverLetter && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Motivering / Hisspitch</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(coverLetter)
+                    setCoverLetterCopied(true)
+                    setTimeout(() => setCoverLetterCopied(false), 2000)
+                  }}
+                  className="text-xs px-2 py-1 rounded border transition-colors"
+                  style={{ borderColor: '#e5e7eb', color: coverLetterCopied ? '#16a34a' : '#7c3aed' }}
+                >
+                  {coverLetterCopied ? '✓ Kopierad!' : 'Kopiera'}
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 leading-relaxed border border-gray-100">
+                {coverLetter}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-2 mt-3">
             <button
