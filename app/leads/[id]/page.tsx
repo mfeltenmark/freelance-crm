@@ -73,6 +73,11 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [editingNextStep, setEditingNextStep] = useState(false)
   const [nextStepText, setNextStepText] = useState('')
   const [nextStepDate, setNextStepDate] = useState('')
+  const [showFollowupModal, setShowFollowupModal] = useState(false)
+  const [followupTo, setFollowupTo] = useState('')
+  const [followupSubject, setFollowupSubject] = useState('')
+  const [followupMessage, setFollowupMessage] = useState('')
+  const [sendingFollowup, setSendingFollowup] = useState(false)
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['lead', id],
@@ -221,6 +226,19 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               </button>
             </>
           )}
+          <button
+            onClick={() => {
+              setFollowupTo(lead.contact?.email ?? '')
+              setFollowupSubject(`Komplettering: ${lead.title}`)
+              setFollowupMessage('')
+              setShowFollowupModal(true)
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            title="Skicka kompletteringsmail"
+          >
+            <Mail className="w-4 h-4" />
+            Kompletteringsmail
+          </button>
           <button
             onClick={() => setShowEditModal(true)}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -879,6 +897,70 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Spara</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Followup mail modal */}
+      {showFollowupModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowFollowupModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Skicka kompletteringsmail</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mottagare</label>
+                <input
+                  value={followupTo}
+                  readOnly
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ämne</label>
+                <input
+                  value={followupSubject}
+                  onChange={e => setFollowupSubject(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Meddelande</label>
+                <textarea
+                  value={followupMessage}
+                  onChange={e => setFollowupMessage(e.target.value)}
+                  rows={6}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setShowFollowupModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm"
+              >
+                Avbryt
+              </button>
+              <button
+                type="button"
+                disabled={sendingFollowup || !followupTo || !followupSubject || !followupMessage}
+                onClick={async () => {
+                  setSendingFollowup(true)
+                  await fetch(`/api/leads/${id}/send-followup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to: followupTo, subject: followupSubject, message: followupMessage }),
+                  })
+                  setSendingFollowup(false)
+                  setShowFollowupModal(false)
+                  queryClient.invalidateQueries({ queryKey: ['lead', id] })
+                }}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+              >
+                {sendingFollowup ? 'Skickar...' : 'Skicka'}
+              </button>
+            </div>
           </div>
         </div>
       )}
