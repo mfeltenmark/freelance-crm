@@ -308,9 +308,13 @@ export default function LeadsPage() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm text-gray-900 truncate">{lead.title}</div>
-                      {lead.contact && (
+                      {(lead.contact || lead.source) && (
                         <div className="text-xs text-gray-500 truncate">
-                          {lead.contact.firstName} {lead.contact.lastName}
+                          {lead.contact && lead.source
+                            ? `${lead.contact.firstName} ${lead.contact.lastName} · ${lead.source}`
+                            : lead.contact
+                            ? `${lead.contact.firstName} ${lead.contact.lastName}`
+                            : lead.source}
                         </div>
                       )}
                       <div className="flex items-center gap-2 mt-0.5">
@@ -379,9 +383,13 @@ export default function LeadsPage() {
                           )}
                           <div>
                             <div className="font-medium text-gray-900">{lead.title}</div>
-                            {lead.contact && (
+                            {(lead.contact || lead.source) && (
                               <div className="text-xs text-gray-500">
-                                {lead.contact.firstName} {lead.contact.lastName}
+                                {lead.contact && lead.source
+                                  ? `${lead.contact.firstName} ${lead.contact.lastName} · ${lead.source}`
+                                  : lead.contact
+                                  ? `${lead.contact.firstName} ${lead.contact.lastName}`
+                                  : lead.source}
                               </div>
                             )}
                             {lead.company && <div className="text-sm text-gray-500">{lead.company.name}</div>}
