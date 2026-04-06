@@ -56,7 +56,17 @@ export default function DashboardPage() {
                     </span>
                     <p className="font-medium text-gray-900 truncate">{signal.subject}</p>
                   </div>
-                  <p className="text-sm text-gray-500 truncate">{signal.from}</p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {(() => {
+                      const nameMatch = signal.from.match(/^([^<]+)</)
+                      const emailMatch = signal.from.match(/<([^>]+)>/) || signal.from.match(/(\S+@\S+)/)
+                      const name = nameMatch ? nameMatch[1].trim() : null
+                      const domain = emailMatch ? emailMatch[1].split('@')[1] : null
+                      if (name && domain) return `${name} · ${domain}`
+                      if (name) return name
+                      return domain || signal.from
+                    })()}
+                  </p>
                 </div>
                 <span className="text-xs text-gray-400 flex-shrink-0 mt-0.5">
                   {formatDistance(new Date(signal.createdAt), new Date(), { addSuffix: true, locale: sv })}
