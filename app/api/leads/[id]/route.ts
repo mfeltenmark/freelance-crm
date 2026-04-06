@@ -12,6 +12,14 @@ export async function GET(
       where: { id },
       include: {
         company: true,
+        contact: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
         activities: {
           orderBy: { activityDate: 'desc' },
           take: 10,
