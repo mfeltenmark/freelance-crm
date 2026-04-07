@@ -1,9 +1,11 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { formatDistance } from 'date-fns'
 import { sv } from 'date-fns/locale'
+import { RefreshCw } from 'lucide-react'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { UpcomingMilestones } from '@/components/dashboard/UpcomingMilestones'
 import { UpcomingBookings } from '@/components/dashboard/UpcomingBookings'
@@ -13,6 +15,8 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity'
 export default function DashboardPage() {
   const { data: session } = useSession()
   const firstName = session?.user?.name?.split(' ')[0] || 'du'
+  const queryClient = useQueryClient()
+  const [polling, setPolling] = useState(false)
 
   const { data } = useQuery({
     queryKey: ['dashboard'],
@@ -41,7 +45,22 @@ export default function DashboardPage() {
       {/* Nya mäklarlead */}
       {pendingSignals.length > 0 && (
         <div>
-          <h3 className="text-base font-semibold text-gray-900 mb-3">Nya mäklarlead</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-gray-900">Nya mäklarlead</h3>
+            <button
+              onClick={async () => {
+                setPolling(true)
+                await fetch('/api/gmail/poll-trigger', { method: 'POST' })
+                await queryClient.invalidateQueries({ queryKey: ['mail-signals-pending'] })
+                setPolling(false)
+              }}
+              disabled={polling}
+              className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw size={12} className={polling ? 'animate-spin' : ''} />
+              {polling ? 'Hämtar...' : 'Hämta nya leads'}
+            </button>
+          </div>
           <div className="space-y-2">
             {pendingSignals.map((signal: any) => (
               <a
