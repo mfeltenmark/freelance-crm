@@ -40,7 +40,8 @@ export default function CVGeneratorPage() {
   const [ovriga, setOvriga] = useState('')
   const [model, setModel] = useState<'sonnet' | 'opus'>('sonnet')
   const [inputMode, setInputMode] = useState<'kravprofil' | 'befintlig'>('kravprofil')
-  const [loading, setLoading] = useState(false)
+  const [loadingCV, setLoadingCV] = useState(false)
+  const [loadingCoverLetter, setLoadingCoverLetter] = useState(false)
   const [cvData, setCvData] = useState<CVData | null>(null)
   const [error, setError] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -111,9 +112,8 @@ export default function CVGeneratorPage() {
   }, [])
 
   async function handleGenerateCoverLetter() {
-    console.log('Generera motivering clicked', { kravprofil: kravprofil.slice(0, 50), ovriga, riktning, sprak, model })
     if (!kravprofil.trim()) return
-    setLoading(true)
+    setLoadingCoverLetter(true)
     setError('')
     setCoverLetter('')
     try {
@@ -127,13 +127,13 @@ export default function CVGeneratorPage() {
     } catch (e: any) {
       setError(e.message || 'Något gick fel')
     } finally {
-      setLoading(false)
+      setLoadingCoverLetter(false)
     }
   }
 
   async function handleGenerate() {
     if (!kravprofil.trim()) return
-    setLoading(true)
+    setLoadingCV(true)
     setError('')
     setCvData(null)
     setCoverLetter('')
@@ -150,6 +150,7 @@ export default function CVGeneratorPage() {
       setCvData(data.cv)
 
       if (includeCoverLetter) {
+        setLoadingCoverLetter(true)
         const clRes = await fetch('/api/cv-generator/generate-cover-letter', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -161,7 +162,8 @@ export default function CVGeneratorPage() {
     } catch (e: any) {
       setError(e.message || 'Något gick fel')
     } finally {
-      setLoading(false)
+      setLoadingCV(false)
+      setLoadingCoverLetter(false)
     }
   }
 
@@ -364,20 +366,20 @@ export default function CVGeneratorPage() {
           <div className={`mt-4 ${includeCoverLetter ? 'grid grid-cols-2 gap-2' : ''}`}>
             <button
               onClick={handleGenerate}
-              disabled={loading || !kravprofil.trim()}
+              disabled={loadingCV || !kravprofil.trim()}
               className="w-full py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-40"
               style={{ background: '#5e3a8c' }}
             >
-              {loading ? <><RefreshCw size={14} className="animate-spin" /> Genererar...</> : 'Generera CV'}
+              {loadingCV ? <><RefreshCw size={14} className="animate-spin" /> Genererar...</> : 'Generera CV'}
             </button>
             {includeCoverLetter && (
               <button
                 onClick={handleGenerateCoverLetter}
-                disabled={loading || !kravprofil.trim()}
+                disabled={loadingCoverLetter || !kravprofil.trim()}
                 className="w-full py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-40 border"
                 style={{ borderColor: '#5e3a8c', color: '#5e3a8c', background: '#f5f0fb' }}
               >
-                {loading ? <><RefreshCw size={14} className="animate-spin" /> Genererar...</> : 'Generera motivering'}
+                {loadingCoverLetter ? <><RefreshCw size={14} className="animate-spin" /> Genererar...</> : 'Generera motivering'}
               </button>
             )}
           </div>
@@ -393,7 +395,7 @@ export default function CVGeneratorPage() {
           </div>
 
           <div className="flex-1 bg-gray-50 rounded-lg p-4 min-h-48">
-            {!cvData && !loading && (
+            {!cvData && !loadingCV && (
               <div className="h-full flex items-center justify-center text-center text-gray-300 text-sm">
                 <div>
                   <FileText size={24} className="mx-auto mb-2" style={{ color: '#5e3a8c', opacity: 0.3 }} />
@@ -401,7 +403,7 @@ export default function CVGeneratorPage() {
                 </div>
               </div>
             )}
-            {loading && (
+            {loadingCV && (
               <div className="h-full flex items-center justify-center text-sm text-gray-400">
                 <RefreshCw size={16} className="animate-spin mr-2" /> Genererar med Claude...
               </div>
