@@ -123,6 +123,7 @@ export default function CVGeneratorPage() {
         body: JSON.stringify({ description: kravprofil, instructions: ovriga, riktning, model, language: sprak }),
       })
       const clData = await clRes.json()
+      console.log('generate-cover-letter response:', clData, 'status:', clRes.status)
       if (clData.coverLetter) setCoverLetter(clData.coverLetter)
     } catch (e: any) {
       setError(e.message || 'Något gick fel')
