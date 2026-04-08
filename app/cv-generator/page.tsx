@@ -132,7 +132,7 @@ export default function CVGeneratorPage() {
         const clRes = await fetch('/api/cv-generator/generate-cover-letter', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: kravprofil, instructions: ovriga, riktning, model }),
+          body: JSON.stringify({ description: kravprofil, instructions: ovriga, riktning, model, language: sprak }),
         })
         const clData = await clRes.json()
         if (clData.coverLetter) setCoverLetter(clData.coverLetter)

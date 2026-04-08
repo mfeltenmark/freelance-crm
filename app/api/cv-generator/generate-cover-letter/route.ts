@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { description, instructions, riktning, model } = await request.json()
+  const { description, instructions, riktning, model, language } = await request.json()
 
   const modelId = model === 'opus'
     ? 'claude-opus-4-20250514'
     : 'claude-sonnet-4-20250514'
+
+  const languageInstruction = language === 'Engelska'
+    ? 'Write the cover letter in English.'
+    : 'Skriv motiveringen på svenska.'
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -19,7 +23,7 @@ export async function POST(request: Request) {
       max_tokens: 500,
       messages: [{
         role: 'user',
-        content: `Du är Mikael Feltenmark, senior konsult inom ${riktning}. Skriv en kort motivering/hisspitch på 3-5 meningar på svenska för detta uppdrag. Texten ska vara personlig, direkt och affärsnära. Inga rubriker, bara löpande text.
+        content: `${languageInstruction} Du är Mikael Feltenmark, senior konsult inom ${riktning}. Skriv en kort motivering/hisspitch på 3-5 meningar för detta uppdrag. Texten ska vara personlig, direkt och affärsnära. Inga rubriker, bara löpande text.
 
 Uppdragsbeskrivning:
 ${description}
