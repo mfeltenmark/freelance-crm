@@ -110,6 +110,26 @@ export default function CVGeneratorPage() {
       .catch(() => {})
   }, [])
 
+  async function handleGenerateCoverLetter() {
+    if (!kravprofil.trim()) return
+    setLoading(true)
+    setError('')
+    setCoverLetter('')
+    try {
+      const clRes = await fetch('/api/cv-generator/generate-cover-letter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: kravprofil, instructions: ovriga, riktning, model, language: sprak }),
+      })
+      const clData = await clRes.json()
+      if (clData.coverLetter) setCoverLetter(clData.coverLetter)
+    } catch (e: any) {
+      setError(e.message || 'Något gick fel')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleGenerate() {
     if (!kravprofil.trim()) return
     setLoading(true)
@@ -340,14 +360,26 @@ export default function CVGeneratorPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleGenerate}
-            disabled={loading || !kravprofil.trim()}
-            className="w-full mt-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-40"
-            style={{ background: '#5e3a8c' }}
-          >
-            {loading ? <><RefreshCw size={14} className="animate-spin" /> Genererar...</> : 'Generera CV'}
-          </button>
+          <div className={`mt-4 ${includeCoverLetter ? 'grid grid-cols-2 gap-2' : ''}`}>
+            <button
+              onClick={handleGenerate}
+              disabled={loading || !kravprofil.trim()}
+              className="w-full py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-40"
+              style={{ background: '#5e3a8c' }}
+            >
+              {loading ? <><RefreshCw size={14} className="animate-spin" /> Genererar...</> : 'Generera CV'}
+            </button>
+            {includeCoverLetter && (
+              <button
+                onClick={handleGenerateCoverLetter}
+                disabled={loading || !kravprofil.trim()}
+                className="w-full py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-40 border"
+                style={{ borderColor: '#5e3a8c', color: '#5e3a8c', background: '#f5f0fb' }}
+              >
+                {loading ? <><RefreshCw size={14} className="animate-spin" /> Genererar...</> : 'Generera motivering'}
+              </button>
+            )}
+          </div>
 
           {error && (
             <p className="mt-3 text-sm text-red-500">{error}</p>
