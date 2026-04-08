@@ -111,6 +111,7 @@ export default function CVGeneratorPage() {
   }, [])
 
   async function handleGenerateCoverLetter() {
+    console.log('Generera motivering clicked', { kravprofil: kravprofil.slice(0, 50), ovriga, riktning, sprak, model })
     if (!kravprofil.trim()) return
     setLoading(true)
     setError('')
