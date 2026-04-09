@@ -4,8 +4,8 @@ export async function POST(request: Request) {
   const { description, instructions, riktning, model, language } = await request.json()
 
   const modelId = model === 'opus'
-    ? 'claude-opus-4-20250514'
-    : 'claude-sonnet-4-20250514'
+    ? 'claude-opus-4-6'
+    : 'claude-sonnet-4-6'
 
   const languageInstruction = language === 'Engelska'
     ? 'Write the cover letter in English.'

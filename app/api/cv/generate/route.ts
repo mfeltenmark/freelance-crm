@@ -56,8 +56,8 @@ ${cvDatabaseText || 'Inga CV-filer hittades i databasen. Använd enbart master-p
 `
 
     const claudeModel = model === 'opus'
-      ? 'claude-opus-4-20250514'
-      : 'claude-sonnet-4-20250514'
+      ? 'claude-opus-4-6'
+      : 'claude-sonnet-4-6'
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
