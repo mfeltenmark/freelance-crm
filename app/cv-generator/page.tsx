@@ -297,7 +297,12 @@ export default function CVGeneratorPage() {
       let attachmentData: { filename: string; content: string } | undefined
       if (attachment) {
         const buffer = await attachment.arrayBuffer()
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+        const bytes = new Uint8Array(buffer)
+        let binary = ''
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i])
+        }
+        const base64 = btoa(binary)
         attachmentData = { filename: attachment.name, content: base64 }
       }
       await fetch('/api/leads/send-cv-email', {
