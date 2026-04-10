@@ -186,6 +186,36 @@ export async function saveGeneratedCV(filename: string, content: string): Promis
   return res.data.webViewLink ?? null
 }
 
+export async function saveHTMLToDriver(filename: string, html: string): Promise<string | null> {
+  const drive = getDriveClient()
+
+  const foldersRes = await drive.files.list({
+    q: `'${FOLDER_ID}' in parents and name = 'generated' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: 'files(id)',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  })
+
+  const generatedFolderId = foldersRes.data.files?.[0]?.id
+  if (!generatedFolderId) throw new Error('generated-mappen hittades inte i Drive')
+
+  const { Readable } = await import('stream')
+  const stream = Readable.from(Buffer.from(html, 'utf-8'))
+
+  const res = await drive.files.create({
+    requestBody: {
+      name: filename,
+      parents: [generatedFolderId],
+      mimeType: 'text/html',
+    },
+    media: { mimeType: 'text/html', body: stream },
+    fields: 'id, webViewLink',
+    supportsAllDrives: true,
+  })
+
+  return res.data.webViewLink ?? null
+}
+
 export async function savePDFToDriver(filename: string, content: Buffer): Promise<string | null> {
   const drive = getDriveClient()
 
