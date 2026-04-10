@@ -171,53 +171,60 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
     setEmailMessage('')
     setEmailCoverLetter(lead.coverLetterText || '')
     setEmailSent(false)
+    setEmailSending(false)
+    setAttachment(null)
     setShowEmailModal(true)
   }
 
   async function handleSendEmailFromLead() {
     if (!emailTo) return
     setEmailSending(true)
-    const signature = `--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`
-    const fullBody = [emailMessage, emailCoverLetter, signature].filter(Boolean).join('\n\n')
-    let attachmentData: { filename: string; content: string } | undefined
-    if (attachment) {
-      const buffer = await attachment.arrayBuffer()
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
-      attachmentData = { filename: attachment.name, content: base64 }
+    try {
+      const signature = `--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`
+      const fullBody = [emailMessage, emailCoverLetter, signature].filter(Boolean).join('\n\n')
+      let attachmentData: { filename: string; content: string } | undefined
+      if (attachment) {
+        const buffer = await attachment.arrayBuffer()
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+        attachmentData = { filename: attachment.name, content: base64 }
+      }
+      await fetch('/api/leads/send-cv-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: emailTo,
+          subject: emailSubject,
+          body: fullBody,
+          leadId: lead.id,
+          attachment: attachmentData,
+        })
+      })
+      await fetch('/api/activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'EMAIL_SENT',
+          subject: emailSubject,
+          description: `CV-mail skickat till ${emailTo}.`,
+          leadId: lead.id,
+          activityDate: new Date().toISOString(),
+        })
+      })
+      await fetch(`/api/leads/${lead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'CONTACTED' })
+      })
+      setEmailSent(true)
+      setTimeout(() => {
+        setShowEmailModal(false)
+        refetch()
+      }, 2000)
+    } catch (err) {
+      console.error('Email send error:', err)
+    } finally {
+      setEmailSending(false)
     }
-    await fetch('/api/leads/send-cv-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: emailTo,
-        subject: emailSubject,
-        body: fullBody,
-        leadId: lead.id,
-        attachment: attachmentData,
-      })
-    })
-    await fetch('/api/activities', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'EMAIL_SENT',
-        subject: emailSubject,
-        description: `CV-mail skickat till ${emailTo}.`,
-        leadId: lead.id,
-        activityDate: new Date().toISOString(),
-      })
-    })
-    await fetch(`/api/leads/${lead.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stage: 'CONTACTED' })
-    })
-    setEmailSending(false)
-    setEmailSent(true)
-    setTimeout(() => {
-      setShowEmailModal(false)
-      refetch()
-    }, 2000)
   }
 
   const handleOpenCV = async () => {
@@ -1176,7 +1183,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
 
       {showEmailModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '0.75rem', overflowY: 'auto', maxHeight: '90vh' }}>
             <h3 style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.25rem' }}>Skicka CV-mail</h3>
             <div>
               <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Till</label>

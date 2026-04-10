@@ -291,43 +291,48 @@ export default function CVGeneratorPage() {
   async function handleSendEmail() {
     if (!contactEmail) return
     setSending(true)
-    const parts = [emailBody, emailMotivering].filter(Boolean).join('\n\n')
-    const fullBody = parts ? `${parts}\n\n${SIGNATURE}` : SIGNATURE
-    let attachmentData: { filename: string; content: string } | undefined
-    if (attachment) {
-      const buffer = await attachment.arrayBuffer()
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
-      attachmentData = { filename: attachment.name, content: base64 }
+    try {
+      const parts = [emailBody, emailMotivering].filter(Boolean).join('\n\n')
+      const fullBody = parts ? `${parts}\n\n${SIGNATURE}` : SIGNATURE
+      let attachmentData: { filename: string; content: string } | undefined
+      if (attachment) {
+        const buffer = await attachment.arrayBuffer()
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+        attachmentData = { filename: attachment.name, content: base64 }
+      }
+      await fetch('/api/leads/send-cv-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: contactEmail,
+          subject: emailSubject,
+          body: fullBody,
+          leadId,
+          attachment: attachmentData,
+        })
+      })
+      await fetch('/api/activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'EMAIL_SENT',
+          subject: emailSubject,
+          description: `CV-mail skickat till ${contactEmail}.`,
+          leadId,
+          activityDate: new Date().toISOString(),
+        })
+      })
+      await fetch(`/api/leads/${leadId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'CONTACTED' })
+      })
+      setSent(true)
+    } catch (err) {
+      console.error('Email send error:', err)
+    } finally {
+      setSending(false)
     }
-    await fetch('/api/leads/send-cv-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: contactEmail,
-        subject: emailSubject,
-        body: fullBody,
-        leadId,
-        attachment: attachmentData,
-      })
-    })
-    await fetch('/api/activities', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'EMAIL_SENT',
-        subject: emailSubject,
-        description: `CV-mail skickat till ${contactEmail}.`,
-        leadId,
-        activityDate: new Date().toISOString(),
-      })
-    })
-    await fetch(`/api/leads/${leadId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stage: 'CONTACTED' })
-    })
-    setSending(false)
-    setSent(true)
   }
 
   async function handlePortalSubmitted() {
