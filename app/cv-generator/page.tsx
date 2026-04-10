@@ -57,7 +57,19 @@ export default function CVGeneratorPage() {
   const [includeCoverLetter, setIncludeCoverLetter] = useState(false)
   const [coverLetter, setCoverLetter] = useState('')
   const [coverLetterCopied, setCoverLetterCopied] = useState(false)
+  const [deliveryMode, setDeliveryMode] = useState<'none' | 'email' | 'portal'>('none')
+  const [savedToLead, setSavedToLead] = useState(false)
+  const [emailSubject, setEmailSubject] = useState('')
+  const [emailBody, setEmailBody] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [submittedViaPortal, setSubmittedViaPortal] = useState(false)
+  const [leadTitle, setLeadTitle] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactName, setContactName] = useState('')
+  const [cvDriveUrl, setCvDriveUrl] = useState('')
   const searchParams = useSearchParams()
+  const leadId = searchParams.get('leadId')
 
   useEffect(() => {
     fetch('/api/cv/drive-files')
@@ -67,7 +79,6 @@ export default function CVGeneratorPage() {
   }, [])
 
   useEffect(() => {
-    const leadId = searchParams.get('leadId')
     if (!leadId) return
 
     fetch(`/api/leads/${leadId}`)
@@ -78,6 +89,11 @@ export default function CVGeneratorPage() {
         const instr = lead.instructions ?? ''
         if (desc) setKravprofil(desc)
         if (instr) setOvriga(instr)
+        if (lead.title) setLeadTitle(lead.title)
+        if (lead.contact?.email) setContactEmail(lead.contact.email)
+        if (lead.contact?.firstName || lead.contact?.lastName) {
+          setContactName(`${lead.contact?.firstName ?? ''} ${lead.contact?.lastName ?? ''}`.trim())
+        }
 
         if (desc) {
           setSuggestingSettings(true)
@@ -193,7 +209,10 @@ export default function CVGeneratorPage() {
     if (res.ok) {
       const data = await res.json()
       setSavedToDrive(true)
-      if (data.webViewLink) setDriveLink(data.webViewLink)
+      if (data.webViewLink) {
+        setDriveLink(data.webViewLink)
+        setCvDriveUrl(data.webViewLink)
+      }
       const updated = await fetch('/api/cv/drive-files').then(r => r.json())
       setDriveFiles(updated)
     }
@@ -216,6 +235,87 @@ export default function CVGeneratorPage() {
       body: JSON.stringify({ prompt: masterPrompt }),
     })
     setSavingPrompt(false)
+  }
+
+  async function handleSaveToLead() {
+    if (!leadId || (!cvData && !coverLetter)) return
+    await fetch(`/api/leads/${leadId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        coverLetterText: coverLetter || undefined,
+        cvDriveUrl: cvDriveUrl || undefined,
+      })
+    })
+    await fetch('/api/activities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'CV_SENT',
+        subject: 'CV och motivering skapade',
+        description: `CV genererat och kopplat till leadet. ${coverLetter ? 'Motivering inkluderad.' : ''}`,
+        leadId,
+        activityDate: new Date().toISOString(),
+      })
+    })
+    setSavedToLead(true)
+    setEmailSubject(`CV: ${leadTitle}`)
+    setEmailBody(coverLetter || '')
+  }
+
+  async function handleSendEmail() {
+    if (!contactEmail) return
+    setSending(true)
+    await fetch('/api/leads/send-cv-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: contactEmail,
+        subject: emailSubject,
+        body: emailBody,
+        cvDriveUrl,
+        leadId,
+        leadTitle,
+      })
+    })
+    await fetch('/api/activities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'EMAIL_SENT',
+        subject: emailSubject,
+        description: `CV-mail skickat till ${contactEmail}. CV: ${cvDriveUrl || 'ej sparat på Drive'}`,
+        leadId,
+        activityDate: new Date().toISOString(),
+      })
+    })
+    await fetch(`/api/leads/${leadId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: 'CONTACTED' })
+    })
+    setSending(false)
+    setSent(true)
+  }
+
+  async function handlePortalSubmitted() {
+    await fetch('/api/activities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'CV_SENT',
+        subject: 'Ansökan inlämnad via portal',
+        description: `CV och motivering inlämnade manuellt i ansökningsportal. CV: ${cvDriveUrl || 'ej sparat'}`,
+        leadId,
+        activityDate: new Date().toISOString(),
+      })
+    })
+    await fetch(`/api/leads/${leadId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: 'CONTACTED' })
+    })
+    setSubmittedViaPortal(true)
   }
 
   return (
@@ -465,6 +565,91 @@ export default function CVGeneratorPage() {
               <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 leading-relaxed border border-gray-100">
                 {coverLetter}
               </div>
+            </div>
+          )}
+
+          {leadId && (cvData || coverLetter) && (
+            <div style={{ marginTop: '2rem', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '1.5rem' }}>
+              <h3 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Leverera till lead</h3>
+
+              {leadTitle && (
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                  {leadTitle}{contactName ? ` · ${contactName}` : ''}{contactEmail ? ` · ${contactEmail}` : ''}
+                </p>
+              )}
+
+              {!savedToLead ? (
+                <button onClick={handleSaveToLead} style={{ background: '#5e3a8c', color: 'white', padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', cursor: 'pointer', marginBottom: '1rem' }}>
+                  Spara till lead
+                </button>
+              ) : (
+                <div style={{ marginBottom: '1rem' }}>
+                  <span style={{ color: '#16a34a', fontSize: '0.875rem' }}>✓ Sparat på leadet</span>
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                    <button
+                      onClick={() => setDeliveryMode('email')}
+                      style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', border: '2px solid', borderColor: deliveryMode === 'email' ? '#5e3a8c' : '#e5e7eb', background: deliveryMode === 'email' ? '#f5f0fb' : 'white', cursor: 'pointer', fontWeight: 500 }}
+                    >
+                      Skicka via epost
+                    </button>
+                    <button
+                      onClick={() => setDeliveryMode('portal')}
+                      style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', border: '2px solid', borderColor: deliveryMode === 'portal' ? '#5e3a8c' : '#e5e7eb', background: deliveryMode === 'portal' ? '#f5f0fb' : 'white', cursor: 'pointer', fontWeight: 500 }}
+                    >
+                      Ansökningsportal
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {deliveryMode === 'email' && !sent && (
+                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Till</label>
+                    <input value={contactEmail} readOnly style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', background: '#f9fafb' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Ämne</label>
+                    <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Meddelande</label>
+                    <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={6} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
+                  </div>
+                  {cvDriveUrl && <p style={{ fontSize: '0.75rem', color: '#6b7280' }}>Drive-länk bifogas automatiskt i mailet.</p>}
+                  <button onClick={handleSendEmail} disabled={sending || !contactEmail} style={{ alignSelf: 'flex-start', background: '#5e3a8c', color: 'white', padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
+                    {sending ? 'Skickar...' : 'Skicka'}
+                  </button>
+                </div>
+              )}
+
+              {deliveryMode === 'email' && sent && (
+                <p style={{ color: '#16a34a', fontSize: '0.875rem', marginTop: '0.5rem' }}>✓ Mail skickat till {contactEmail}. Leadet uppdaterat.</p>
+              )}
+
+              {deliveryMode === 'portal' && !submittedViaPortal && (
+                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {coverLetter && (
+                    <div>
+                      <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Motivering (kopiera till portalen)</label>
+                      <textarea value={coverLetter} readOnly rows={5} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', background: '#f9fafb', resize: 'vertical' }} />
+                      <button onClick={() => navigator.clipboard.writeText(coverLetter)} style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#5e3a8c', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                        Kopiera text
+                      </button>
+                    </div>
+                  )}
+                  {cvDriveUrl && (
+                    <a href={cvDriveUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.875rem', color: '#5e3a8c' }}>Öppna CV i Google Drive</a>
+                  )}
+                  <button onClick={handlePortalSubmitted} style={{ alignSelf: 'flex-start', background: '#5e3a8c', color: 'white', padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
+                    Markera som inlämnad
+                  </button>
+                </div>
+              )}
+
+              {deliveryMode === 'portal' && submittedViaPortal && (
+                <p style={{ color: '#16a34a', fontSize: '0.875rem', marginTop: '0.5rem' }}>✓ Inlämnad via portal. Leadet uppdaterat.</p>
+              )}
             </div>
           )}
 

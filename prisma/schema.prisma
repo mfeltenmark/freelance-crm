@@ -97,6 +97,10 @@ model Lead {
   isPaid              Boolean     @default(false)
   paymentNote         String?     @db.Text
 
+  // CV delivery
+  coverLetterText     String?     @db.Text
+  cvDriveUrl          String?
+
   // Metadata
   tags                String[]
   customFields        Json?

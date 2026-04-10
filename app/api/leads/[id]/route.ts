@@ -86,6 +86,8 @@ export async function PATCH(
       nextStep,
       nextStepDate,
       instructions,
+      coverLetterText,
+      cvDriveUrl,
     } = body
 
     // Build update data
@@ -112,6 +114,8 @@ export async function PATCH(
     if (nextStep !== undefined) updateData.nextStep = nextStep || null
     if (nextStepDate !== undefined) updateData.nextStepDate = nextStepDate ? new Date(nextStepDate) : null
     if (instructions !== undefined) updateData.instructions = instructions
+    if (coverLetterText !== undefined) updateData.coverLetterText = coverLetterText
+    if (cvDriveUrl !== undefined) updateData.cvDriveUrl = cvDriveUrl
 
     // Update lastActivityDate
     updateData.lastActivityDate = new Date()
