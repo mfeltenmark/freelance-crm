@@ -200,11 +200,17 @@ export default function CVGeneratorPage() {
 
   async function handleSaveToDrive(): Promise<string> {
     if (!cvData) return ''
-    const filename = `CV_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.json`
-    const res = await fetch('/api/cv/save-drive', {
+    const htmlRes = await fetch('/api/cv/export-pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cv: cvData, filename }),
+      body: JSON.stringify({ cv: cvData }),
+    })
+    const html = await htmlRes.text()
+    const filename = `CV_Mikael_Feltenmark_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.pdf`
+    const res = await fetch('/api/cv/save-pdf-drive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ html, filename }),
     })
     if (res.ok) {
       const data = await res.json()
