@@ -78,6 +78,13 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [followupSubject, setFollowupSubject] = useState('')
   const [followupMessage, setFollowupMessage] = useState('')
   const [sendingFollowup, setSendingFollowup] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [emailTo, setEmailTo] = useState('')
+  const [emailSubject, setEmailSubject] = useState('')
+  const [emailMessage, setEmailMessage] = useState('')
+  const [emailCoverLetter, setEmailCoverLetter] = useState('')
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['lead', id],
@@ -156,6 +163,54 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
 
   const stage = stageConfig[lead.stage]
   const currentStageIndex = stages.indexOf(lead.stage)
+
+  function handleOpenEmailModal() {
+    setEmailTo(lead.contact?.email || '')
+    setEmailSubject(`CV: ${lead.title}`)
+    setEmailMessage('')
+    setEmailCoverLetter(lead.coverLetterText || '')
+    setEmailSent(false)
+    setShowEmailModal(true)
+  }
+
+  async function handleSendEmailFromLead() {
+    if (!emailTo) return
+    setEmailSending(true)
+    const signature = `--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`
+    const fullBody = [emailMessage, emailCoverLetter, signature].filter(Boolean).join('\n\n')
+    await fetch('/api/leads/send-cv-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: emailTo,
+        subject: emailSubject,
+        body: fullBody,
+        leadId: lead.id,
+      })
+    })
+    await fetch('/api/activities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'EMAIL_SENT',
+        subject: emailSubject,
+        description: `CV-mail skickat till ${emailTo}.`,
+        leadId: lead.id,
+        activityDate: new Date().toISOString(),
+      })
+    })
+    await fetch(`/api/leads/${lead.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: 'CONTACTED' })
+    })
+    setEmailSending(false)
+    setEmailSent(true)
+    setTimeout(() => {
+      setShowEmailModal(false)
+      refetch()
+    }, 2000)
+  }
 
   const handleOpenCV = async () => {
     if (!lead.cvJsonData) return
@@ -252,6 +307,12 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           >
             <Mail className="w-4 h-4" />
             Kompletteringsmail
+          </button>
+          <button
+            onClick={handleOpenEmailModal}
+            style={{ padding: '0.4rem 1rem', background: '#5e3a8c', color: 'white', borderRadius: '6px', fontSize: '0.875rem', border: 'none', cursor: 'pointer' }}
+          >
+            Skicka CV-mail
           </button>
           <button
             onClick={() => setShowEditModal(true)}
@@ -1101,6 +1162,46 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Spara</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showEmailModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h3 style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.25rem' }}>Skicka CV-mail</h3>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Till</label>
+              <input value={emailTo} onChange={e => setEmailTo(e.target.value)} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }} />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Ämne</label>
+              <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }} />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Meddelande</label>
+              <textarea value={emailMessage} onChange={e => setEmailMessage(e.target.value)} rows={3} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
+            </div>
+            {emailCoverLetter && (
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Motivering</label>
+                <textarea value={emailCoverLetter} onChange={e => setEmailCoverLetter(e.target.value)} rows={5} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
+              </div>
+            )}
+            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'pre-line' }}>
+              {`--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`}
+            </div>
+            <p style={{ fontSize: '0.75rem', color: '#6b7280' }}>Bifoga CV manuellt som PDF innan du skickar.</p>
+            {emailSent ? (
+              <p style={{ color: '#16a34a', fontSize: '0.875rem' }}>✓ Mail skickat. Leadet uppdaterat.</p>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowEmailModal(false)} style={{ padding: '0.5rem 1rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '0.875rem', cursor: 'pointer', background: 'white' }}>Avbryt</button>
+                <button onClick={handleSendEmailFromLead} disabled={emailSending || !emailTo} style={{ padding: '0.5rem 1rem', background: '#5e3a8c', color: 'white', borderRadius: '6px', fontSize: '0.875rem', border: 'none', cursor: 'pointer' }}>
+                  {emailSending ? 'Skickar...' : 'Skicka'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
