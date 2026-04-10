@@ -1268,6 +1268,15 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
   const [source, setSource] = useState(lead.source || '')
   const [saving, setSaving] = useState(false)
   const [showExtra, setShowExtra] = useState(false)
+  const [editContactId, setEditContactId] = useState(lead.contactId || '')
+  const [contacts, setContacts] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch('/api/contacts?limit=100')
+      .then(r => r.json())
+      .then(data => setContacts(data.contacts || []))
+      .catch(() => {})
+  }, [])
 
   const patchLead = async () => {
     await fetch(`/api/leads/${lead.id}`, {
@@ -1281,6 +1290,7 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
         closeProbability: closeProbability ? parseInt(closeProbability, 10) : null,
         expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate).toISOString() : null,
         source,
+        contactId: editContactId || undefined,
       }),
     })
   }
@@ -1312,6 +1322,19 @@ function EditLeadForm({ lead, onClose, onSaved }: { lead: any; onClose: () => vo
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Övriga instruktioner</label>
         <textarea className="input w-full" rows={3} value={instructions} onChange={e => setInstructions(e.target.value)} />
+      </div>
+      <div>
+        <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Kontakt</label>
+        <select
+          value={editContactId}
+          onChange={e => setEditContactId(e.target.value)}
+          style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+        >
+          <option value=''>Ingen kontakt</option>
+          {contacts.map(c => (
+            <option key={c.id} value={c.id}>{c.firstName} {c.lastName} {c.email ? `(${c.email})` : ''}</option>
+          ))}
+        </select>
       </div>
       <div>
         <button

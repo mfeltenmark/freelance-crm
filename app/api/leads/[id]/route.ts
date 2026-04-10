@@ -89,6 +89,7 @@ export async function PATCH(
       coverLetterText,
       cvDriveUrl,
       cvJsonData,
+      contactId,
     } = body
 
     // Build update data
@@ -118,6 +119,7 @@ export async function PATCH(
     if (coverLetterText !== undefined) updateData.coverLetterText = coverLetterText
     if (cvDriveUrl !== undefined) updateData.cvDriveUrl = cvDriveUrl
     if (cvJsonData !== undefined) updateData.cvJsonData = cvJsonData
+    if (contactId !== undefined) updateData.contactId = contactId || null
 
     // Update lastActivityDate
     updateData.lastActivityDate = new Date()
