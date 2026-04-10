@@ -710,6 +710,17 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           {/* CV-logg */}
           <div className="mt-6">
             <h3 className="text-sm font-medium text-gray-500 mb-2">Skickat CV</h3>
+            {lead.coverLetterText && (
+              <div style={{ marginBottom: '1rem' }}>
+                <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: 500 }}>Motivering</p>
+                <p style={{ fontSize: '0.875rem', color: '#374151', whiteSpace: 'pre-wrap', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0.75rem' }}>{lead.coverLetterText}</p>
+              </div>
+            )}
+            {lead.cvDriveUrl && (
+              <div style={{ marginBottom: '1rem' }}>
+                <a href={lead.cvDriveUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.875rem', color: '#5e3a8c', textDecoration: 'underline' }}>Öppna CV i Google Drive</a>
+              </div>
+            )}
             <button
               onClick={() => setShowLogCV(true)}
               className="w-full px-4 py-2 border border-purple-200 text-purple-600 rounded-lg text-sm font-medium hover:bg-purple-50"
