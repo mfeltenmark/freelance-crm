@@ -199,21 +199,25 @@ export default function CVGeneratorPage() {
   }
 
   async function handleSaveToDrive(): Promise<string> {
-    if (!cvData) return ''
+    if (!cvData) { console.log('handleSaveToDrive: no cvData'); return '' }
     const htmlRes = await fetch('/api/cv/export-pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cv: cvData }),
     })
+    console.log('export-pdf status:', htmlRes.status)
     const html = await htmlRes.text()
+    console.log('html length:', html.length)
     const filename = `CV_Mikael_Feltenmark_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.pdf`
     const res = await fetch('/api/cv/save-pdf-drive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ html, filename }),
     })
+    console.log('save-pdf-drive status:', res.status)
     if (res.ok) {
       const data = await res.json()
+      console.log('save-pdf-drive response:', data)
       setSavedToDrive(true)
       if (data.webViewLink) {
         setDriveLink(data.webViewLink)
@@ -222,6 +226,9 @@ export default function CVGeneratorPage() {
       const updated = await fetch('/api/cv/drive-files').then(r => r.json())
       setDriveFiles(updated)
       return data.webViewLink || ''
+    } else {
+      const err = await res.text()
+      console.log('save-pdf-drive error:', err)
     }
     return ''
   }
