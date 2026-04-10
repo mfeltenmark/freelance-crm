@@ -69,6 +69,7 @@ export default function CVGeneratorPage() {
   const [contactName, setContactName] = useState('')
   const [cvDriveUrl, setCvDriveUrl] = useState('')
   const [emailMotivering, setEmailMotivering] = useState('')
+  const [attachment, setAttachment] = useState<File | null>(null)
   const searchParams = useSearchParams()
   const leadId = searchParams.get('leadId')
 
@@ -292,6 +293,12 @@ export default function CVGeneratorPage() {
     setSending(true)
     const parts = [emailBody, emailMotivering].filter(Boolean).join('\n\n')
     const fullBody = parts ? `${parts}\n\n${SIGNATURE}` : SIGNATURE
+    let attachmentData: { filename: string; content: string } | undefined
+    if (attachment) {
+      const buffer = await attachment.arrayBuffer()
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+      attachmentData = { filename: attachment.name, content: base64 }
+    }
     await fetch('/api/leads/send-cv-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -300,6 +307,7 @@ export default function CVGeneratorPage() {
         subject: emailSubject,
         body: fullBody,
         leadId,
+        attachment: attachmentData,
       })
     })
     await fetch('/api/activities', {
@@ -643,6 +651,11 @@ export default function CVGeneratorPage() {
                   <div>
                     <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Motivering</label>
                     <textarea value={emailMotivering} onChange={e => setEmailMotivering(e.target.value)} rows={5} placeholder="Motivering / hisspitch..." style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Bifoga fil (PDF)</label>
+                    <input type="file" accept=".pdf" onChange={e => setAttachment(e.target.files?.[0] || null)} style={{ fontSize: '0.875rem' }} />
+                    {attachment && <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>✓ {attachment.name}</p>}
                   </div>
                   <div>
                     <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Signatur</label>

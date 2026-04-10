@@ -85,6 +85,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [emailCoverLetter, setEmailCoverLetter] = useState('')
   const [emailSending, setEmailSending] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [attachment, setAttachment] = useState<File | null>(null)
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['lead', id],
@@ -178,6 +179,12 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
     setEmailSending(true)
     const signature = `--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`
     const fullBody = [emailMessage, emailCoverLetter, signature].filter(Boolean).join('\n\n')
+    let attachmentData: { filename: string; content: string } | undefined
+    if (attachment) {
+      const buffer = await attachment.arrayBuffer()
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+      attachmentData = { filename: attachment.name, content: base64 }
+    }
     await fetch('/api/leads/send-cv-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -186,6 +193,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
         subject: emailSubject,
         body: fullBody,
         leadId: lead.id,
+        attachment: attachmentData,
       })
     })
     await fetch('/api/activities', {
@@ -1188,6 +1196,11 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 <textarea value={emailCoverLetter} onChange={e => setEmailCoverLetter(e.target.value)} rows={5} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
               </div>
             )}
+            <div>
+              <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Bifoga fil (PDF)</label>
+              <input type="file" accept=".pdf" onChange={e => setAttachment(e.target.files?.[0] || null)} style={{ fontSize: '0.875rem' }} />
+              {attachment && <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>✓ {attachment.name}</p>}
+            </div>
             <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'pre-line' }}>
               {`--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`}
             </div>
