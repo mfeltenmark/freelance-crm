@@ -717,9 +717,14 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               </div>
             )}
             {lead.cvDriveUrl && (
-              <div style={{ marginBottom: '1rem' }}>
-                <a href={lead.cvDriveUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.875rem', color: '#5e3a8c', textDecoration: 'underline' }}>Öppna CV i Google Drive</a>
-              </div>
+              <a
+                href={lead.cvDriveUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: 'inline-block', marginBottom: '1rem', padding: '0.4rem 1rem', background: '#f5f0fb', color: '#5e3a8c', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none', border: '1px solid #e5e7eb' }}
+              >
+                Öppna CV i Google Drive
+              </a>
             )}
             <button
               onClick={() => setShowLogCV(true)}
