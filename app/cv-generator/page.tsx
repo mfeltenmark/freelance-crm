@@ -68,6 +68,7 @@ export default function CVGeneratorPage() {
   const [contactEmail, setContactEmail] = useState('')
   const [contactName, setContactName] = useState('')
   const [cvDriveUrl, setCvDriveUrl] = useState('')
+  const [emailMotivering, setEmailMotivering] = useState('')
   const searchParams = useSearchParams()
   const leadId = searchParams.get('leadId')
 
@@ -280,22 +281,25 @@ export default function CVGeneratorPage() {
     })
     setSavedToLead(true)
     setEmailSubject(`CV: ${leadTitle}`)
-    setEmailBody(coverLetter || '')
+    setEmailBody('')
+    setEmailMotivering(coverLetter || '')
   }
+
+  const SIGNATURE = `--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`
 
   async function handleSendEmail() {
     if (!contactEmail) return
     setSending(true)
+    const parts = [emailBody, emailMotivering].filter(Boolean).join('\n\n')
+    const fullBody = parts ? `${parts}\n\n${SIGNATURE}` : SIGNATURE
     await fetch('/api/leads/send-cv-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         to: contactEmail,
         subject: emailSubject,
-        body: emailBody,
-        cvDriveUrl,
+        body: fullBody,
         leadId,
-        leadTitle,
       })
     })
     await fetch('/api/activities', {
@@ -304,7 +308,7 @@ export default function CVGeneratorPage() {
       body: JSON.stringify({
         type: 'EMAIL_SENT',
         subject: emailSubject,
-        description: `CV-mail skickat till ${contactEmail}. CV: ${cvDriveUrl || 'ej sparat på Drive'}`,
+        description: `CV-mail skickat till ${contactEmail}.`,
         leadId,
         activityDate: new Date().toISOString(),
       })
@@ -626,7 +630,7 @@ export default function CVGeneratorPage() {
                 <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <div>
                     <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Till</label>
-                    <input value={contactEmail} readOnly style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', background: '#f9fafb' }} />
+                    <input value={contactEmail} onChange={e => setContactEmail(e.target.value)} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }} />
                   </div>
                   <div>
                     <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Ämne</label>
@@ -634,9 +638,17 @@ export default function CVGeneratorPage() {
                   </div>
                   <div>
                     <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Meddelande</label>
-                    <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={6} style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
+                    <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={4} placeholder="Skriv ett personligt meddelande..." style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
                   </div>
-                  {cvDriveUrl && <p style={{ fontSize: '0.75rem', color: '#6b7280' }}>Drive-länk bifogas automatiskt i mailet.</p>}
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Motivering</label>
+                    <textarea value={emailMotivering} onChange={e => setEmailMotivering(e.target.value)} rows={5} placeholder="Motivering / hisspitch..." style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Signatur</label>
+                    <pre style={{ fontSize: '0.75rem', color: '#9ca3af', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontFamily: 'inherit', whiteSpace: 'pre-wrap' }}>{`--\nMikael Feltenmark\nTech & Change by Feltenmark AB\nmikael@techchange.io | 073-736 85 32\nlinkedin.com/in/mikaelf | techchange.io`}</pre>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#6b7280' }}>Bifoga CV manuellt som PDF innan du skickar.</p>
                   <button onClick={handleSendEmail} disabled={sending || !contactEmail} style={{ alignSelf: 'flex-start', background: '#5e3a8c', color: 'white', padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
                     {sending ? 'Skickar...' : 'Skicka'}
                   </button>
