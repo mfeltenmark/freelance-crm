@@ -157,6 +157,20 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const stage = stageConfig[lead.stage]
   const currentStageIndex = stages.indexOf(lead.stage)
 
+  const handleOpenCV = async () => {
+    if (!lead.cvJsonData) return
+    const res = await fetch('/api/cv/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cv: lead.cvJsonData }),
+    })
+    const html = await res.text()
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 10000)
+  }
+
   const formatCurrency = (value: string | null) => {
     if (!value) return '-'
     const num = parseFloat(value)
@@ -716,12 +730,20 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 <p style={{ fontSize: '0.875rem', color: '#374151', whiteSpace: 'pre-wrap', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0.75rem' }}>{lead.coverLetterText}</p>
               </div>
             )}
+            {lead.cvJsonData && (
+              <button
+                onClick={handleOpenCV}
+                style={{ display: 'inline-block', marginBottom: '1rem', padding: '0.4rem 1rem', background: '#f5f0fb', color: '#5e3a8c', borderRadius: '6px', fontSize: '0.875rem', border: '1px solid #e5e7eb', cursor: 'pointer' }}
+              >
+                Öppna CV
+              </button>
+            )}
             {lead.cvDriveUrl && (
               <a
                 href={lead.cvDriveUrl}
                 target="_blank"
                 rel="noreferrer"
-                style={{ display: 'inline-block', marginBottom: '1rem', padding: '0.4rem 1rem', background: '#f5f0fb', color: '#5e3a8c', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none', border: '1px solid #e5e7eb' }}
+                style={{ display: 'inline-block', marginBottom: '1rem', marginLeft: '0.5rem', padding: '0.4rem 1rem', background: '#f5f0fb', color: '#5e3a8c', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none', border: '1px solid #e5e7eb' }}
               >
                 Öppna CV i Google Drive
               </a>

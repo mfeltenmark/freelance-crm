@@ -264,6 +264,7 @@ export default function CVGeneratorPage() {
       body: JSON.stringify({
         coverLetterText: coverLetter || undefined,
         cvDriveUrl: resolvedDriveUrl || undefined,
+        cvJsonData: cvData || undefined,
       })
     })
     await fetch('/api/activities', {
