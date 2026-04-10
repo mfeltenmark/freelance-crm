@@ -198,8 +198,8 @@ export default function CVGeneratorPage() {
     setTimeout(() => URL.revokeObjectURL(url), 10000)
   }
 
-  async function handleSaveToDrive() {
-    if (!cvData) return
+  async function handleSaveToDrive(): Promise<string> {
+    if (!cvData) return ''
     const filename = `CV_${riktning.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.json`
     const res = await fetch('/api/cv/save-drive', {
       method: 'POST',
@@ -215,7 +215,9 @@ export default function CVGeneratorPage() {
       }
       const updated = await fetch('/api/cv/drive-files').then(r => r.json())
       setDriveFiles(updated)
+      return data.webViewLink || ''
     }
+    return ''
   }
 
   async function handleOpenSettings() {
@@ -239,12 +241,16 @@ export default function CVGeneratorPage() {
 
   async function handleSaveToLead() {
     if (!leadId || (!cvData && !coverLetter)) return
+    let resolvedDriveUrl = cvDriveUrl
+    if (!savedToDrive && cvData) {
+      resolvedDriveUrl = await handleSaveToDrive()
+    }
     await fetch(`/api/leads/${leadId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         coverLetterText: coverLetter || undefined,
-        cvDriveUrl: cvDriveUrl || undefined,
+        cvDriveUrl: resolvedDriveUrl || undefined,
       })
     })
     await fetch('/api/activities', {

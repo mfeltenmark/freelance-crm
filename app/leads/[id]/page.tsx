@@ -731,9 +731,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               <div key={a.id} className="mt-2 p-3 bg-gray-50 rounded-lg text-sm">
                 <p className="text-gray-600">{a.description}</p>
                 {a.subject && (
-                  <a href={a.subject} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline text-xs mt-1 block truncate">
-                    {a.subject}
-                  </a>
+                  <p className="text-xs text-gray-500 mt-1">{a.subject}</p>
                 )}
                 <p className="text-xs text-gray-400 mt-1">{formatDistance(new Date(a.createdAt), new Date(), { addSuffix: true, locale: sv })}</p>
               </div>
