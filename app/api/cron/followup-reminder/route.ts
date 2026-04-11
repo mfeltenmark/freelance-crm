@@ -58,17 +58,23 @@ export async function GET(request: Request) {
 
     const contactName = [contact.firstName, contact.lastName].filter(Boolean).join(' ')
 
-    await prisma.task.create({
-      data: {
-        contactId: contact.id,
-        title: `Följ upp med ${contactName}`,
-        description: `Senaste kontakt: ${lastContact.toLocaleDateString('sv-SE')}. Dags att höra av dig igen.`,
-        priority: 'medium',
-        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 dagar framåt
-        status: 'todo',
-      }
-    })
-    created++
+    console.log('Processing contact:', contact.id, contactName)
+
+    try {
+      await prisma.task.create({
+        data: {
+          contactId: contact.id,
+          title: `Följ upp med ${contactName}`,
+          description: `Senaste kontakt: ${lastContact.toLocaleDateString('sv-SE')}. Dags att höra av dig igen.`,
+          priority: 'medium',
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 dagar framåt
+          status: 'todo',
+        }
+      })
+      created++
+    } catch (err) {
+      console.error('Failed to create task for contact:', contact.id, err)
+    }
   }
 
   return NextResponse.json({ ok: true, created })
