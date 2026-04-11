@@ -549,6 +549,38 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
             </div>
           )}
 
+          {/* Kommande möten */}
+          {(() => {
+            const upcomingMeetings = (lead.activities || [])
+              .filter((a: any) => a.type === 'MEETING' && new Date(a.activityDate) > new Date())
+              .sort((a: any, b: any) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime())
+            return upcomingMeetings.length > 0 && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '0.75rem' }}>Kommande möten</h3>
+                {upcomingMeetings.map((meeting: any) => (
+                  <div key={meeting.id} style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p style={{ fontSize: '0.875rem', fontWeight: 500, color: '#166534' }}>{meeting.subject}</p>
+                      <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.125rem' }}>
+                        {new Date(meeting.activityDate).toLocaleDateString('sv-SE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        {' '}{new Date(meeting.activityDate).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                        {meeting.durationMinutes ? ` · ${meeting.durationMinutes} min` : ''}
+                      </p>
+                      {meeting.description && (
+                        <p style={{ fontSize: '0.75rem', color: '#15803d', marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{meeting.description}</p>
+                      )}
+                    </div>
+                    {(meeting.metadata as any)?.meetingUrl && (
+                      <a href={(meeting.metadata as any).meetingUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: '#16a34a', textDecoration: 'underline', marginLeft: '1rem', whiteSpace: 'nowrap' }}>
+                        Öppna i Cal
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+
           {/* Activities */}
           <div className="card">
             <div className="card-header flex items-center justify-between">
