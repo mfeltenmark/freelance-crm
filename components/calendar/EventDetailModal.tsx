@@ -116,7 +116,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4" style={{ overflowY: 'auto', maxHeight: '90vh' }}>
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-gray-100">
           <div>
