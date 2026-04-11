@@ -56,7 +56,10 @@ export async function POST(request: Request) {
         durationMinutes: durationMinutes || 30,
         leadId: leadId || null,
         contactId: contactId || null,
-        metadata: meetingUrl ? { meetingUrl } : undefined,
+        metadata: {
+          meetingUrl: event.data.htmlLink,
+          googleEventId: event.data.id,
+        },
       },
     })
 

@@ -1,12 +1,13 @@
 'use client'
 
-import { 
-  X, 
-  Calendar, 
-  Clock, 
-  Video, 
-  MapPin, 
-  User, 
+import { useState } from 'react'
+import {
+  X,
+  Calendar,
+  Clock,
+  Video,
+  MapPin,
+  User,
   Briefcase,
   Mail,
   ExternalLink
@@ -47,6 +48,32 @@ interface EventDetailModalProps {
 
 export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
   const eventDate = parseISO(event.activityDate)
+  const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState(event.subject || '')
+  const [editDate, setEditDate] = useState(new Date(event.activityDate).toISOString().split('T')[0])
+  const [editTime, setEditTime] = useState(new Date(event.activityDate).toTimeString().slice(0, 5))
+  const [editDuration, setEditDuration] = useState(event.durationMinutes || 30)
+  const [editNotes, setEditNotes] = useState(event.description || '')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    setSaving(true)
+    const scheduledAt = new Date(`${editDate}T${editTime}:00`).toISOString()
+    await fetch(`/api/meetings/${event.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: editTitle,
+        scheduledAt,
+        durationMinutes: editDuration,
+        notes: editNotes,
+      }),
+    })
+    setSaving(false)
+    setEditing(false)
+    onClose()
+    window.location.reload()
+  }
   
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -99,129 +126,200 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
-          {/* Date & Time */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-brand-50 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-brand-600" />
+        {editing ? (
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Titel</label>
+              <input
+                value={editTitle}
+                onChange={e => setEditTitle(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Datum</label>
+                <input
+                  type="date"
+                  value={editDate}
+                  onChange={e => setEditDate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tid</label>
+                <input
+                  type="time"
+                  value={editTime}
+                  onChange={e => setEditTime(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
             </div>
             <div>
-              <p className="font-medium text-gray-900">
-                {format(eventDate, 'EEEE d MMMM yyyy', { locale: sv })}
-              </p>
-              <p className="text-sm text-gray-500">
-                {format(eventDate, 'HH:mm')}
-                {event.durationMinutes && ` – ${event.durationMinutes} minuter`}
-              </p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Längd</label>
+              <select
+                value={editDuration}
+                onChange={e => setEditDuration(Number(e.target.value))}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value={15}>15 min</option>
+                <option value={30}>30 min</option>
+                <option value={45}>45 min</option>
+                <option value={60}>60 min</option>
+                <option value={90}>90 min</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Anteckningar</label>
+              <textarea
+                value={editNotes}
+                onChange={e => setEditNotes(e.target.value)}
+                rows={6}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-vertical"
+              />
             </div>
           </div>
-
-          {/* Meeting URL */}
-          {event.metadata?.meetingUrl && (
+        ) : (
+          <div className="p-6 space-y-4">
+            {/* Date & Time */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-                <Video className="w-5 h-5 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500">Videomöte</p>
-                <a 
-                  href={event.metadata.meetingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
-                >
-                  Gå med i möte
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          )}
-
-          {/* Location */}
-          {event.metadata?.location && (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-orange-600" />
+              <div className="w-10 h-10 rounded-lg bg-brand-50 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-brand-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Plats</p>
-                <p className="font-medium text-gray-900">{event.metadata.location}</p>
+                <p className="font-medium text-gray-900">
+                  {format(eventDate, 'EEEE d MMMM yyyy', { locale: sv })}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {format(eventDate, 'HH:mm')}
+                  {event.durationMinutes && ` – ${event.durationMinutes} minuter`}
+                </p>
               </div>
             </div>
-          )}
 
-          {/* Contact */}
-          {event.contact && (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                <User className="w-5 h-5 text-blue-600" />
+            {/* Meeting URL */}
+            {event.metadata?.meetingUrl && (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+                  <Video className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">Videomöte</p>
+                  <a
+                    href={event.metadata.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
+                  >
+                    Gå med i möte
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500">Deltagare</p>
-                <Link 
-                  href={`/contacts/${event.contact.id}`}
-                  className="font-medium text-gray-900 hover:text-brand-600"
-                >
-                  {event.contact.firstName} {event.contact.lastName}
-                </Link>
-                <p className="text-sm text-gray-500">{event.contact.email}</p>
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* Lead */}
-          {event.lead && (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-purple-600" />
+            {/* Location */}
+            {event.metadata?.location && (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Plats</p>
+                  <p className="font-medium text-gray-900">{event.metadata.location}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Lead</p>
-                <Link 
-                  href={`/leads/${event.lead.id}`}
-                  className="font-medium text-gray-900 hover:text-brand-600"
-                >
-                  {event.lead.title}
-                </Link>
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* Description */}
-          {event.description && (
-            <div className="pt-4 border-t border-gray-100">
-              <p className="text-sm text-gray-500 mb-1">Beskrivning</p>
-              <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
-            </div>
-          )}
-        </div>
+            {/* Contact */}
+            {event.contact && (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <User className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">Deltagare</p>
+                  <Link
+                    href={`/contacts/${event.contact.id}`}
+                    className="font-medium text-gray-900 hover:text-brand-600"
+                  >
+                    {event.contact.firstName} {event.contact.lastName}
+                  </Link>
+                  <p className="text-sm text-gray-500">{event.contact.email}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Lead */}
+            {event.lead && (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Lead</p>
+                  <Link
+                    href={`/leads/${event.lead.id}`}
+                    className="font-medium text-gray-900 hover:text-brand-600"
+                  >
+                    {event.lead.title}
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            {event.description && (
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-sm text-gray-500 mb-1">Beskrivning</p>
+                <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-          {event.contact?.email && (
-            <a
-              href={`mailto:${event.contact.email}`}
-              className="btn-secondary"
-            >
-              <Mail className="w-4 h-4" />
-              Skicka email
-            </a>
-          )}
-          {event.metadata?.meetingUrl && (
-            <a
-              href={event.metadata.meetingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary"
-            >
-              <Video className="w-4 h-4" />
-              Gå med
-            </a>
-          )}
-          {!event.metadata?.meetingUrl && (
-            <button onClick={onClose} className="btn-primary">
-              Stäng
-            </button>
+          {editing ? (
+            <>
+              <button onClick={() => setEditing(false)} className="btn-secondary">
+                Avbryt
+              </button>
+              <button onClick={handleSave} disabled={saving} className="btn-primary">
+                {saving ? 'Sparar...' : 'Spara'}
+              </button>
+            </>
+          ) : (
+            <>
+              {event.contact?.email && (
+                <a href={`mailto:${event.contact.email}`} className="btn-secondary">
+                  <Mail className="w-4 h-4" />
+                  Skicka email
+                </a>
+              )}
+              {event.type === 'MEETING' && (
+                <button onClick={() => setEditing(true)} className="btn-secondary">
+                  Redigera
+                </button>
+              )}
+              {event.metadata?.meetingUrl && (
+                <a
+                  href={event.metadata.meetingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                  <Video className="w-4 h-4" />
+                  Gå med
+                </a>
+              )}
+              {!event.metadata?.meetingUrl && (
+                <button onClick={onClose} className="btn-primary">
+                  Stäng
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
