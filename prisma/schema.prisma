@@ -190,7 +190,8 @@ model Contact {
   
   leads               Lead[]
   activities          Activity[]
-  
+  tasks               Task[]
+
   // Metadata
   tags                String[]
   notes               String?     @db.Text
@@ -297,10 +298,13 @@ model Proposal {
 
 model Task {
   id                String      @id @default(cuid())
-  
+
   // Relations
   leadId            String?
   lead              Lead?       @relation(fields: [leadId], references: [id])
+
+  contactId         String?
+  contact           Contact?    @relation(fields: [contactId], references: [id])
   
   // Content
   title             String
@@ -318,6 +322,7 @@ model Task {
   updatedAt         DateTime    @updatedAt
 
   @@index([leadId])
+  @@index([contactId])
   @@index([dueDate])
   @@index([status])
 }

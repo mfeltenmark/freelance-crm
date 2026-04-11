@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
       priority = 'medium',
       dueDate,
       leadId,
+      contactId,
     } = body
 
     if (!title) {
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
         status: 'todo',
         dueDate: dueDate ? new Date(dueDate) : null,
         leadId: leadId || null,
+        contactId: contactId || null,
       },
       include: {
         lead: {

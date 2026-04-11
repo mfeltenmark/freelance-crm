@@ -61,6 +61,11 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
   const [showLeadModal, setShowLeadModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showAddTask, setShowAddTask] = useState(false)
+  const [taskTitle, setTaskTitle] = useState('')
+  const [taskPriority, setTaskPriority] = useState('medium')
+  const [taskDueDate, setTaskDueDate] = useState('')
+  const [taskSaving, setTaskSaving] = useState(false)
   const [editingCompany, setEditingCompany] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('')
 
@@ -113,8 +118,18 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
     },
   })
 
+  const { data: tasksData, refetch: refetchTasks } = useQuery({
+    queryKey: ['contact-tasks', id],
+    queryFn: async () => {
+      const res = await fetch(`/api/contacts/${id}/tasks`)
+      if (!res.ok) return { tasks: [] }
+      return res.json()
+    },
+  })
+
   const contact = data?.contact
   const relatedLeads = data?.relatedLeads || []
+  const contactTasks = tasksData?.tasks || []
 
   if (isLoading) {
     return (
@@ -396,6 +411,130 @@ export default function ContactDetailPage({ params }: ContactDetailProps) {
             </div>
           </div>
         </div>
+
+          {/* Tasks */}
+          <div className="card">
+            <div className="card-header flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Tasks</h3>
+              <button
+                onClick={() => { setTaskTitle(''); setTaskPriority('medium'); setTaskDueDate(''); setShowAddTask(v => !v) }}
+                className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+              >
+                + Lägg till task
+              </button>
+            </div>
+            {showAddTask && (
+              <div className="px-4 pb-4 border-b border-gray-100">
+                <div className="space-y-2 pt-2">
+                  <input
+                    value={taskTitle}
+                    onChange={e => setTaskTitle(e.target.value)}
+                    placeholder="Vad ska göras?"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={taskPriority}
+                      onChange={e => setTaskPriority(e.target.value)}
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    >
+                      <option value="low">Låg prioritet</option>
+                      <option value="medium">Medium prioritet</option>
+                      <option value="high">Hög prioritet</option>
+                    </select>
+                    <input
+                      type="date"
+                      value={taskDueDate}
+                      onChange={e => setTaskDueDate(e.target.value)}
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={() => setShowAddTask(false)} className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg">Avbryt</button>
+                    <button
+                      disabled={taskSaving || !taskTitle}
+                      onClick={async () => {
+                        if (!taskTitle) return
+                        setTaskSaving(true)
+                        await fetch('/api/tasks', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            title: taskTitle,
+                            priority: taskPriority,
+                            dueDate: taskDueDate || null,
+                            contactId: id,
+                          }),
+                        })
+                        setTaskSaving(false)
+                        setShowAddTask(false)
+                        refetchTasks()
+                      }}
+                      className="px-3 py-1.5 text-sm bg-brand-600 text-white rounded-lg disabled:opacity-50"
+                    >
+                      {taskSaving ? 'Sparar...' : 'Spara'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="card-body">
+              {contactTasks.length > 0 ? (
+                <div className="space-y-2">
+                  {contactTasks.map((task: any) => {
+                    const priorityColor: Record<string, string> = {
+                      high: 'text-red-600 bg-red-50',
+                      medium: 'text-amber-600 bg-amber-50',
+                      low: 'text-gray-500 bg-gray-100',
+                    }
+                    const priorityLabel: Record<string, string> = {
+                      high: 'Hög',
+                      medium: 'Medium',
+                      low: 'Låg',
+                    }
+                    return (
+                      <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
+                        <div className={cn('w-2 h-2 rounded-full mt-1.5 flex-shrink-0', task.status === 'done' ? 'bg-green-500' : task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-amber-500' : 'bg-gray-400')} />
+                        <div className="flex-1 min-w-0">
+                          <p className={cn('text-sm font-medium', task.status === 'done' && 'line-through text-gray-400')}>
+                            {task.title}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={cn('text-xs px-1.5 py-0.5 rounded font-medium', priorityColor[task.priority] || 'text-gray-500 bg-gray-100')}>
+                              {priorityLabel[task.priority] || task.priority}
+                            </span>
+                            {task.dueDate && (
+                              <span className="text-xs text-gray-500">
+                                {format(new Date(task.dueDate), 'd MMM', { locale: sv })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {task.status !== 'done' && (
+                          <button
+                            onClick={async () => {
+                              await fetch(`/api/tasks/${task.id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ status: 'done' }),
+                              })
+                              refetchTasks()
+                            }}
+                            className="text-gray-400 hover:text-green-600 flex-shrink-0"
+                            title="Markera som klar"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-6 text-sm">Inga tasks kopplade till denna kontakt</p>
+              )}
+            </div>
+          </div>
 
         {/* Right column - Sidebar */}
         <div className="space-y-6">
