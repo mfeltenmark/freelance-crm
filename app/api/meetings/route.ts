@@ -6,6 +6,8 @@ export async function POST(request: Request) {
   try {
     const { leadId, contactId, title, scheduledAt, durationMinutes, notes } = await request.json()
 
+    console.log('meetings POST called', { leadId, title, scheduledAt })
+
     if (!scheduledAt || !title) {
       return NextResponse.json({ error: 'title and scheduledAt are required' }, { status: 400 })
     }
