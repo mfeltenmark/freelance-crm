@@ -55,6 +55,16 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
   const [editDuration, setEditDuration] = useState(event.durationMinutes || 30)
   const [editNotes, setEditNotes] = useState(event.description || '')
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  async function handleDelete() {
+    if (!confirm('Ta bort mötet?')) return
+    setDeleting(true)
+    await fetch(`/api/meetings/${event.id}`, { method: 'DELETE' })
+    setDeleting(false)
+    onClose()
+    window.location.reload()
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -292,6 +302,16 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
             </>
           ) : (
             <>
+              {event.type === 'MEETING' && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  style={{ padding: '0.5rem 1rem', background: 'white', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem' }}
+                >
+                  {deleting ? 'Tar bort...' : 'Ta bort'}
+                </button>
+              )}
+              <div style={{ flex: 1 }} />
               {event.contact?.email && (
                 <a href={`mailto:${event.contact.email}`} className="btn-secondary">
                   <Mail className="w-4 h-4" />

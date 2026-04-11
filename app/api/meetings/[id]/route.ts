@@ -51,3 +51,36 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   return NextResponse.json({ activity: updated })
 }
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
+  const activity = await prisma.activity.findUnique({ where: { id } })
+  if (!activity) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const metadata = activity.metadata as any
+  const googleEventId = metadata?.googleEventId
+
+  if (googleEventId) {
+    const credentials = JSON.parse(process.env.GMAIL_LEADS_SERVICE_ACCOUNT!)
+    const auth = new google.auth.JWT({
+      email: credentials.client_email,
+      key: credentials.private_key,
+      scopes: ['https://www.googleapis.com/auth/calendar'],
+      subject: 'mikael@techchange.io',
+    })
+    const calendar = google.calendar({ version: 'v3', auth })
+    try {
+      await calendar.events.delete({
+        calendarId: 'primary',
+        eventId: googleEventId,
+      })
+    } catch (err) {
+      console.log('Calendar delete failed (may already be deleted):', err)
+    }
+  }
+
+  await prisma.activity.delete({ where: { id } })
+
+  return NextResponse.json({ ok: true })
+}
