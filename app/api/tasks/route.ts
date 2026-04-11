@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          contact: true,
         },
         orderBy: { [sortBy]: sortOrder },
         take: limit,
