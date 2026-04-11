@@ -332,9 +332,9 @@ export default function TasksPage() {
                           {task.lead.company && ` · ${task.lead.company.name}`}
                         </a>
                       )}
-                      {task.lead?.contact && (
+                      {(task.lead?.contact || task.contact) && (
                         <span className="text-xs text-gray-500">
-                          {task.lead.contact.firstName} {task.lead.contact.lastName}
+                          {(task.lead?.contact || task.contact).firstName} {(task.lead?.contact || task.contact).lastName}
                         </span>
                       )}
 
