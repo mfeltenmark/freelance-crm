@@ -2,10 +2,11 @@ import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const { title, scheduledAt, durationMinutes, notes } = await request.json()
 
-  const activity = await prisma.activity.findUnique({ where: { id: params.id } })
+  const activity = await prisma.activity.findUnique({ where: { id } })
   if (!activity) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const metadata = activity.metadata as any
@@ -36,7 +37,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 
   const updated = await prisma.activity.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       subject: title,
       description: notes || '',
