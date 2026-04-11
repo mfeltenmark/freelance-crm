@@ -42,6 +42,11 @@ interface Task {
       lastName: string
     }
   } | null
+  contact?: {
+    firstName: string
+    lastName: string
+    email?: string
+  } | null
   createdAt: string
 }
 
