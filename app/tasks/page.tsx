@@ -337,11 +337,15 @@ export default function TasksPage() {
                           {task.lead.company && ` · ${task.lead.company.name}`}
                         </a>
                       )}
-                      {(task.lead?.contact || task.contact) && (
-                        <span className="text-xs text-gray-500">
-                          {(task.lead?.contact || task.contact).firstName} {(task.lead?.contact || task.contact).lastName}
-                        </span>
-                      )}
+                      {(() => {
+                        const contact = task.lead?.contact || task.contact
+                        if (!contact) return null
+                        return (
+                          <span className="text-xs text-gray-500">
+                            {contact.firstName} {contact.lastName}
+                          </span>
+                        )
+                      })()}
 
                       {dueDate && (
                         <div className={cn(
