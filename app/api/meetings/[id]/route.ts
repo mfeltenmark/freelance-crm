@@ -12,6 +12,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const metadata = activity.metadata as any
   const googleEventId = metadata?.googleEventId
 
+  console.log('PATCH meetings called', { id, googleEventId: metadata?.googleEventId })
+
   const startTime = new Date(scheduledAt)
   const endTime = new Date(startTime.getTime() + (durationMinutes || 30) * 60000)
 
@@ -24,7 +26,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       subject: 'mikael@techchange.io',
     })
     const calendar = google.calendar({ version: 'v3', auth })
-    await calendar.events.patch({
+    const calendarResult = await calendar.events.patch({
       calendarId: 'primary',
       eventId: googleEventId,
       requestBody: {
@@ -34,6 +36,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         end: { dateTime: endTime.toISOString(), timeZone: 'Europe/Stockholm' },
       },
     })
+    console.log('Calendar update result:', JSON.stringify(calendarResult))
   }
 
   const updated = await prisma.activity.update({
