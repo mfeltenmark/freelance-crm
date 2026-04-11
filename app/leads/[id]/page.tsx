@@ -86,6 +86,13 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [emailSending, setEmailSending] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [attachment, setAttachment] = useState<File | null>(null)
+  const [showMeetingModal, setShowMeetingModal] = useState(false)
+  const [meetingTitle, setMeetingTitle] = useState('')
+  const [meetingDate, setMeetingDate] = useState('')
+  const [meetingTime, setMeetingTime] = useState('')
+  const [meetingDuration, setMeetingDuration] = useState(30)
+  const [meetingNotes, setMeetingNotes] = useState('')
+  const [meetingSaving, setMeetingSaving] = useState(false)
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['lead', id],
@@ -232,6 +239,41 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
     }
   }
 
+  function handleOpenMeetingModal() {
+    setMeetingTitle(lead.title || '')
+    setMeetingDate('')
+    setMeetingTime('09:00')
+    setMeetingDuration(30)
+    setMeetingNotes('')
+    setShowMeetingModal(true)
+  }
+
+  async function handleCreateMeeting() {
+    if (!meetingDate || !meetingTime) return
+    setMeetingSaving(true)
+    try {
+      const scheduledAt = new Date(`${meetingDate}T${meetingTime}:00`).toISOString()
+      await fetch('/api/meetings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId: lead.id,
+          contactId: lead.contact?.id || null,
+          title: meetingTitle,
+          scheduledAt,
+          durationMinutes: meetingDuration,
+          notes: meetingNotes,
+        }),
+      })
+      setShowMeetingModal(false)
+      refetch()
+    } catch (err) {
+      console.error('Meeting create error:', err)
+    } finally {
+      setMeetingSaving(false)
+    }
+  }
+
   const handleOpenCV = async () => {
     if (!lead.cvJsonData) return
     const res = await fetch('/api/cv/export-pdf', {
@@ -333,6 +375,12 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
             style={{ padding: '0.4rem 1rem', background: '#5e3a8c', color: 'white', borderRadius: '6px', fontSize: '0.875rem', border: 'none', cursor: 'pointer' }}
           >
             Skicka CV-mail
+          </button>
+          <button
+            onClick={handleOpenMeetingModal}
+            style={{ padding: '0.4rem 1rem', background: '#0f766e', color: 'white', borderRadius: '6px', fontSize: '0.875rem', border: 'none', cursor: 'pointer' }}
+          >
+            Boka möte
           </button>
           <button
             onClick={() => setShowEditModal(true)}
@@ -1227,6 +1275,81 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showMeetingModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '0.75rem', overflowY: 'auto', maxHeight: '90vh' }}>
+            <h3 style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.25rem' }}>Boka möte</h3>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Titel</label>
+              <input
+                value={meetingTitle}
+                onChange={e => setMeetingTitle(e.target.value)}
+                style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Datum</label>
+                <input
+                  type="date"
+                  value={meetingDate}
+                  onChange={e => setMeetingDate(e.target.value)}
+                  style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Tid</label>
+                <input
+                  type="time"
+                  value={meetingTime}
+                  onChange={e => setMeetingTime(e.target.value)}
+                  style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+                />
+              </div>
+            </div>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Längd</label>
+              <select
+                value={meetingDuration}
+                onChange={e => setMeetingDuration(Number(e.target.value))}
+                style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+              >
+                <option value={15}>15 min</option>
+                <option value={30}>30 min</option>
+                <option value={45}>45 min</option>
+                <option value={60}>60 min</option>
+                <option value={90}>90 min</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '0.25rem' }}>Anteckningar</label>
+              <textarea
+                value={meetingNotes}
+                onChange={e => setMeetingNotes(e.target.value)}
+                rows={6}
+                placeholder="Agenda, förberedelser, kontext..."
+                style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
+              <button
+                onClick={() => setShowMeetingModal(false)}
+                style={{ padding: '0.5rem 1rem', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '0.875rem', cursor: 'pointer', background: 'white' }}
+              >
+                Avbryt
+              </button>
+              <button
+                onClick={handleCreateMeeting}
+                disabled={meetingSaving || !meetingDate || !meetingTime || !meetingTitle}
+                style={{ padding: '0.5rem 1rem', background: '#0f766e', color: 'white', borderRadius: '6px', fontSize: '0.875rem', border: 'none', cursor: 'pointer', opacity: (meetingSaving || !meetingDate || !meetingTime || !meetingTitle) ? 0.5 : 1 }}
+              >
+                {meetingSaving ? 'Bokar...' : 'Boka möte'}
+              </button>
+            </div>
           </div>
         </div>
       )}
