@@ -1,12 +1,14 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/db'
 
 export async function POST(request: Request) {
+  const session = await getServerSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { leadId, contactId, title, scheduledAt, durationMinutes, notes } = await request.json()
-
-    console.log('meetings POST called', { leadId, title, scheduledAt })
 
     if (!scheduledAt || !title) {
       return NextResponse.json({ error: 'title and scheduledAt are required' }, { status: 400 })
