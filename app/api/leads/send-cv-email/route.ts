@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     rawEmail = [
       `To: ${to}`,
       `From: Mikael Feltenmark <mikael@techchange.io>`,
-      `Subject: ${subject}`,
+      `Subject: =?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`,
       'MIME-Version: 1.0',
       `Content-Type: multipart/mixed; boundary="${boundary}"`,
       '',
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     rawEmail = [
       `To: ${to}`,
       `From: Mikael Feltenmark <mikael@techchange.io>`,
-      `Subject: ${subject}`,
+      `Subject: =?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`,
       'MIME-Version: 1.0',
       'Content-Type: text/plain; charset="UTF-8"',
       '',
