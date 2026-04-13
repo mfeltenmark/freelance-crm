@@ -656,13 +656,27 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                     >
                       <input
                         type="checkbox"
-                        checked={task.status === 'COMPLETED'}
+                        checked={task.status === 'done'}
                         onChange={async () => {
+                          const newStatus = task.status === 'done' ? 'todo' : 'done'
                           await fetch(`/api/tasks/${task.id}`, {
                             method: 'PATCH',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED' })
+                            body: JSON.stringify({ status: newStatus })
                           })
+                          if (newStatus === 'done') {
+                            await fetch('/api/activities', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                type: 'NOTE',
+                                subject: `Task klar: ${task.title}`,
+                                description: task.description || '',
+                                leadId: lead.id,
+                                activityDate: new Date().toISOString(),
+                              })
+                            })
+                          }
                           refetch()
                         }}
                         className="w-4 h-4 rounded border-gray-300"
