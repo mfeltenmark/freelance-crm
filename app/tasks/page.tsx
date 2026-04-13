@@ -48,6 +48,7 @@ interface Task {
     email?: string
   } | null
   contactId?: string | null
+  leadId?: string | null
   createdAt: string
 }
 
@@ -117,6 +118,19 @@ export default function TasksPage() {
               subject: 'Uppföljning genomförd',
               description: `Task "${task.title}" markerad som klar.`,
               contactId: task.contactId,
+              activityDate: new Date().toISOString(),
+            })
+          })
+        }
+        if (newStatus === 'done' && task.leadId) {
+          await fetch('/api/activities', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'NOTE',
+              subject: `Task klar: ${task.title}`,
+              description: task.description || '',
+              leadId: task.leadId,
               activityDate: new Date().toISOString(),
             })
           })
