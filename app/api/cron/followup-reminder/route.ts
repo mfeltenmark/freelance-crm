@@ -10,17 +10,8 @@ export async function GET(request: Request) {
   const fourteenDaysAgo = new Date()
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
 
-  // Hitta alla kontakter som har aktiviteter men ingen aktivitet senaste 14 dagarna
+  // Hämta ALLA kontakter
   const contacts = await prisma.contact.findMany({
-    where: {
-      leads: {
-        some: {
-          activities: {
-            some: {}
-          }
-        }
-      }
-    },
     include: {
       leads: {
         include: {
@@ -47,13 +38,13 @@ export async function GET(request: Request) {
     // Hoppa över om det redan finns en öppen uppföljnings-task
     if (contact.tasks.length > 0) continue
 
-    // Hitta senaste aktivitetsdatum
-    const latestLead = contact.leads[0]
-    if (!latestLead) continue
-    const latestActivity = latestLead.activities[0]
-    if (!latestActivity) continue
+    // Bestäm senaste kontaktdatum: senaste aktivitet på lead, eller createdAt som fallback
+    const latestLeadActivity = contact.leads[0]?.activities[0]
+    const latestActivityDate = latestLeadActivity
+      ? new Date(latestLeadActivity.activityDate)
+      : new Date(contact.createdAt)
 
-    const lastContact = new Date(latestActivity.activityDate)
+    const lastContact = latestActivityDate
     if (lastContact > fourteenDaysAgo) continue
 
     const contactName = [contact.firstName, contact.lastName].filter(Boolean).join(' ')

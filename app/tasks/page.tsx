@@ -47,6 +47,7 @@ interface Task {
     lastName: string
     email?: string
   } | null
+  contactId?: string | null
   createdAt: string
 }
 
@@ -95,7 +96,7 @@ export default function TasksPage() {
   })
 
   const toggleTaskMutation = useMutation({
-    mutationFn: async ({ id, currentStatus }: { id: string; currentStatus: string }) => {
+    mutationFn: async ({ id, currentStatus, task }: { id: string; currentStatus: string; task: Task }) => {
       const newStatus = currentStatus === 'done' ? 'todo' : 'done'
       const res = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
@@ -103,9 +104,22 @@ export default function TasksPage() {
         body: JSON.stringify({ status: newStatus }),
       })
       if (!res.ok) throw new Error('Failed to update task')
-      return res.json()
+      return { data: await res.json(), newStatus, task }
     },
-    onSuccess: () => {
+    onSuccess: async ({ newStatus, task }) => {
+      if (newStatus === 'done' && task.title.includes('Följ upp') && task.contactId) {
+        await fetch('/api/activities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'NOTE',
+            subject: 'Uppföljning genomförd',
+            description: `Task "${task.title}" markerad som klar.`,
+            contactId: task.contactId,
+            activityDate: new Date().toISOString(),
+          }),
+        })
+      }
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
@@ -288,7 +302,7 @@ export default function TasksPage() {
                 >
                   {/* Checkbox */}
                   <button
-                    onClick={() => toggleTaskMutation.mutate({ id: task.id, currentStatus: task.status })}
+                    onClick={() => toggleTaskMutation.mutate({ id: task.id, currentStatus: task.status, task })}
                     disabled={toggleTaskMutation.isPending}
                     className={cn(
                       'mt-1 flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
