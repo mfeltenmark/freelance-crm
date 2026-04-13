@@ -106,21 +106,26 @@ export default function TasksPage() {
       if (!res.ok) throw new Error('Failed to update task')
       return { data: await res.json(), newStatus, task }
     },
-    onSuccess: async ({ newStatus, task }) => {
-      if (newStatus === 'done' && task.title.includes('Följ upp') && task.contactId) {
-        await fetch('/api/activities', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'NOTE',
-            subject: 'Uppföljning genomförd',
-            description: `Task "${task.title}" markerad som klar.`,
-            contactId: task.contactId,
-            activityDate: new Date().toISOString(),
-          }),
-        })
+    onSuccess: async ({ data, newStatus, task }) => {
+      try {
+        if (newStatus === 'done' && task.contactId && task.title.includes('Följ upp')) {
+          await fetch('/api/activities', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'NOTE',
+              subject: 'Uppföljning genomförd',
+              description: `Task "${task.title}" markerad som klar.`,
+              contactId: task.contactId,
+              activityDate: new Date().toISOString(),
+            })
+          })
+        }
+      } catch (err) {
+        console.error('Failed to log activity:', err)
+      } finally {
+        queryClient.invalidateQueries({ queryKey: ['tasks'] })
       }
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
 
