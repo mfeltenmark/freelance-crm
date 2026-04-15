@@ -12,6 +12,10 @@ export async function POST(request: Request) {
   const customMasterPrompt = await getMasterPrompt()
   const masterPrompt = customMasterPrompt || CV_MASTER_PROMPT
 
+  const languageInstruction = sprak === 'Engelska'
+    ? 'Write the cover letter in English.'
+    : 'Skriv motiveringen på svenska.'
+
   const userMessage = `
 KRAVPROFIL / UPPDRAGSBESKRIVNING:
 ${kravprofil}
@@ -21,7 +25,7 @@ CV-riktning: ${riktning}
 Språk: ${sprak}
 Övriga instruktioner: ${ovriga || 'Inga'}
 
-Skriv en motivering/hisspitch på 3-5 meningar baserat på ovanstående. Texten ska vara personlig, direkt och affärsnära. Inga rubriker, bara löpande text. Svara ENDAST med motiveringen.
+${languageInstruction} Skriv en motivering/hisspitch på 3-5 meningar baserat på ovanstående. Texten ska vara personlig, direkt och affärsnära. Inga rubriker, bara löpande text. Svara ENDAST med motiveringen.
 `
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
