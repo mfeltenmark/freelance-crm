@@ -247,12 +247,21 @@ export default function CVGeneratorPage() {
 
   async function handleSaveMasterPrompt() {
     setSavingPrompt(true)
-    await fetch('/api/cv/master-prompt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: masterPrompt }),
-    })
-    setSavingPrompt(false)
+    try {
+      const res = await fetch('/api/cv/master-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: masterPrompt }),
+      })
+      if (!res.ok) {
+        const err = await res.text()
+        console.error('handleSaveMasterPrompt failed:', res.status, err)
+      }
+    } catch (e) {
+      console.error('handleSaveMasterPrompt error:', e)
+    } finally {
+      setSavingPrompt(false)
+    }
   }
 
   async function handleSaveToLead() {

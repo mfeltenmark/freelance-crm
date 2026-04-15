@@ -290,7 +290,7 @@ Returnera ENBART ett JSON-objekt i detta exakta format, utan markdown-backticks:
       "client": "Klientnamn",
       "role": "Roll",
       "period": "År-År",
-      "description": "Beskrivning av uppdraget och resultaten."
+      "description": "Beskrivning av uppdraget och resultaten. Tech: Azure, .NET Core, React (inkludera bara om tech stack finns belagd i CV-databasen, skriv alltid som separat sista rad med prefixet 'Tech:')."
     }
   ],
   "education": [
@@ -324,4 +324,5 @@ Returnera ENBART ett JSON-objekt i detta exakta format, utan markdown-backticks:
 
 Hitta aldrig på uppdrag, kunder, resultat eller tidsperioder som inte finns i
 antingen master-prompten eller CV-databasen. Om information saknas, utelämna det
-hellre än att gissa. Mikaels trovärdighet är viktigare än ett fylligare CV.`
+hellre än att gissa. Mikaels trovärdighet är viktigare än ett fylligare CV.
+Använd aldrig talstreck (–), tankstreck (—) eller bindestreck som satsavskiljare i löpande text. Ersätt alltid med komma, punkt, kolon eller semikolon.`
