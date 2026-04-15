@@ -5,8 +5,13 @@ import { CV_MASTER_PROMPT } from '@/lib/cv-master-prompt'
 export async function POST(request: Request) {
   const { kravprofil, ovriga, riktning, sprak, model } = await request.json()
 
-  const customMasterPrompt = await getMasterPrompt()
-  const masterPrompt = customMasterPrompt || CV_MASTER_PROMPT
+  let masterPrompt = CV_MASTER_PROMPT
+  try {
+    const customMasterPrompt = await getMasterPrompt()
+    if (customMasterPrompt) masterPrompt = customMasterPrompt
+  } catch (e) {
+    console.error('getMasterPrompt failed, using default:', e)
+  }
 
   const claudeModel = model === 'opus'
     ? 'claude-opus-4-5-20251101'
