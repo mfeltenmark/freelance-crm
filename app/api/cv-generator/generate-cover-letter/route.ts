@@ -1,15 +1,28 @@
 import { NextResponse } from 'next/server'
+import { CV_MASTER_PROMPT } from '@/lib/cv-master-prompt'
+import { getMasterPrompt } from '@/lib/google-drive-cv'
 
 export async function POST(request: Request) {
-  const { description, instructions, riktning, model, language } = await request.json()
+  const { kravprofil, ovriga, riktning, sprak, model } = await request.json()
 
   const modelId = model === 'opus'
     ? 'claude-opus-4-6'
     : 'claude-sonnet-4-6'
 
-  const languageInstruction = language === 'Engelska'
-    ? 'Write the cover letter in English.'
-    : 'Skriv motiveringen på svenska.'
+  const customMasterPrompt = await getMasterPrompt()
+  const masterPrompt = customMasterPrompt || CV_MASTER_PROMPT
+
+  const userMessage = `
+KRAVPROFIL / UPPDRAGSBESKRIVNING:
+${kravprofil}
+
+ANVÄNDARENS VAL:
+CV-riktning: ${riktning}
+Språk: ${sprak}
+Övriga instruktioner: ${ovriga || 'Inga'}
+
+Skriv en motivering/hisspitch på 3-5 meningar baserat på ovanstående. Texten ska vara personlig, direkt och affärsnära. Inga rubriker, bara löpande text. Svara ENDAST med motiveringen.
+`
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -21,18 +34,8 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model: modelId,
       max_tokens: 500,
-      messages: [{
-        role: 'user',
-        content: `${languageInstruction} Du är Mikael Feltenmark, senior konsult inom ${riktning}. Skriv en kort motivering/hisspitch på 3-5 meningar för detta uppdrag. Texten ska vara personlig, direkt och affärsnära. Inga rubriker, bara löpande text.
-
-Uppdragsbeskrivning:
-${description}
-
-Övriga instruktioner:
-${instructions || 'Inga'}
-
-Svara ENDAST med motiveringen, ingen inledning eller förklaring.`,
-      }],
+      system: masterPrompt,
+      messages: [{ role: 'user', content: userMessage }],
     }),
   })
 
