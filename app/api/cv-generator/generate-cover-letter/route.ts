@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server'
-import { CV_MASTER_PROMPT } from '@/lib/cv-master-prompt'
 import { getMasterPrompt } from '@/lib/google-drive-cv'
+import { CV_MASTER_PROMPT } from '@/lib/cv-master-prompt'
 
 export async function POST(request: Request) {
   const { kravprofil, ovriga, riktning, sprak, model } = await request.json()
 
-  const modelId = model === 'opus'
-    ? 'claude-opus-4-6'
-    : 'claude-sonnet-4-6'
-
   const customMasterPrompt = await getMasterPrompt()
   const masterPrompt = customMasterPrompt || CV_MASTER_PROMPT
+
+  const claudeModel = model === 'opus'
+    ? 'claude-opus-4-5-20251101'
+    : 'claude-sonnet-4-5-20251022'
 
   const languageInstruction = sprak === 'Engelska'
     ? 'Write the cover letter in English.'
@@ -36,7 +36,7 @@ ${languageInstruction} Skriv en motivering/hisspitch p√• 3-5 meningar baserat p√
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: modelId,
+      model: claudeModel,
       max_tokens: 500,
       system: masterPrompt,
       messages: [{ role: 'user', content: userMessage }],
