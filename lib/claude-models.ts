@@ -1,0 +1,4 @@
+export const CLAUDE_MODELS = {
+  sonnet: 'claude-sonnet-4-6',
+  opus: 'claude-opus-4-6',
+}

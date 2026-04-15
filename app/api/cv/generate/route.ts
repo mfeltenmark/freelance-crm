@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CV_MASTER_PROMPT } from '@/lib/cv-master-prompt'
 import { readAllCVFiles, getMasterPrompt } from '@/lib/google-drive-cv'
+import { CLAUDE_MODELS } from '@/lib/claude-models'
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,9 +57,7 @@ CV-DATABAS (dina befintliga CV-filer):
 ${cvDatabaseText || 'Inga CV-filer hittades i databasen. Använd enbart master-prompten.'}
 `
 
-    const claudeModel = model === 'opus'
-      ? 'claude-opus-4-6'
-      : 'claude-sonnet-4-6'
+    const claudeModel = model === 'opus' ? CLAUDE_MODELS.opus : CLAUDE_MODELS.sonnet
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getMasterPrompt } from '@/lib/google-drive-cv'
 import { CV_MASTER_PROMPT } from '@/lib/cv-master-prompt'
+import { CLAUDE_MODELS } from '@/lib/claude-models'
 
 export async function POST(request: Request) {
   const { kravprofil, ovriga, riktning, sprak, model } = await request.json()
@@ -13,9 +14,7 @@ export async function POST(request: Request) {
     console.error('getMasterPrompt failed, using default:', e)
   }
 
-  const claudeModel = model === 'opus'
-    ? 'claude-opus-4-6'
-    : 'claude-sonnet-4-6'
+  const claudeModel = model === 'opus' ? CLAUDE_MODELS.opus : CLAUDE_MODELS.sonnet
 
   const languageInstruction = sprak === 'Engelska'
     ? 'Write the cover letter in English.'
