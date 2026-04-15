@@ -37,6 +37,7 @@ export default function CVGeneratorPage() {
   const [ton, setTon] = useState('Direkt och affärsnära')
   const [lyttFram, setLyttFram] = useState('Automatiskt')
   const [antalUppdrag, setAntalUppdrag] = useState('5')
+  const [sortering, setSortering] = useState('Kronologisk')
   const [ovriga, setOvriga] = useState('')
   const [model, setModel] = useState<'sonnet' | 'opus'>('sonnet')
   const [inputMode, setInputMode] = useState<'kravprofil' | 'befintlig'>('kravprofil')
@@ -162,7 +163,7 @@ export default function CVGeneratorPage() {
       const res = await fetch('/api/cv/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag, inputMode }),
+        body: JSON.stringify({ kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag, sortering, inputMode }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -450,6 +451,7 @@ export default function CVGeneratorPage() {
               { label: 'Ton', value: ton, setter: setTon, options: ['Direkt och affärsnära', 'Formell'] },
               { label: 'Lyft fram', value: lyttFram, setter: setLyttFram, options: ['Automatiskt', 'Plattformsstrategi', 'Digital transformation', 'Produktledning', 'Ledarskap', 'Förändringsledning'] },
               { label: 'Antal uppdrag', value: antalUppdrag, setter: setAntalUppdrag, options: ['3', '4', '5', '6', '7'] },
+              { label: 'Sortering', value: sortering, setter: setSortering, options: ['Kronologisk', 'Relevanssorterad'] },
             ].map(({ label, value, setter, options }) => (
               <div key={label}>
                 <label className="block text-xs text-gray-400 font-medium mb-1">{label}</label>

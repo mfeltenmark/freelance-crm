@@ -5,7 +5,7 @@ import { readAllCVFiles, getMasterPrompt } from '@/lib/google-drive-cv'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag, inputMode } = body
+    const { kravprofil, riktning, sprak, fokus, langd, ton, lyttFram, ovriga, model, antalUppdrag, sortering, inputMode } = body
 
     if (!kravprofil?.trim()) {
       return NextResponse.json({ error: 'Kravprofil saknas' }, { status: 400 })
@@ -49,6 +49,7 @@ Längd: ${langd}
 Ton: ${ton}
 Lyft fram: ${lyttFram}
 Antal uppdrag att lista: ${antalUppdrag || '5'} (lista exakt detta antal)
+Sortering av uppdrag: ${sortering || 'Kronologisk'} (kronologisk = senast genomfört uppdrag listas först; relevanssorterad = lista de uppdrag som bäst matchar kravprofilen och riktningen, oavsett när de genomfördes)
 Övriga instruktioner: ${ovriga || 'Inga'}
 
 CV-DATABAS (dina befintliga CV-filer):
