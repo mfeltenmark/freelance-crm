@@ -450,7 +450,7 @@ export default function CVGeneratorPage() {
               { label: 'Längd', value: langd, setter: setLangd, options: ['Standard 2 sidor', 'Kompakt 1 sida', 'Lång 3 sidor'] },
               { label: 'Ton', value: ton, setter: setTon, options: ['Direkt och affärsnära', 'Formell'] },
               { label: 'Lyft fram', value: lyttFram, setter: setLyttFram, options: ['Automatiskt', 'Plattformsstrategi', 'Digital transformation', 'Produktledning', 'Ledarskap', 'Förändringsledning'] },
-              { label: 'Antal uppdrag', value: antalUppdrag, setter: setAntalUppdrag, options: ['3', '4', '5', '6', '7'] },
+              { label: 'Antal uppdrag', value: antalUppdrag, setter: setAntalUppdrag, options: ['3', '4', '5', '6', '7', '8'] },
               { label: 'Sortering', value: sortering, setter: setSortering, options: ['Kronologisk', 'Relevanssorterad'] },
             ].map(({ label, value, setter, options }) => (
               <div key={label}>
