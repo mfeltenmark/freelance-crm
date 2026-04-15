@@ -14,8 +14,8 @@ export async function POST(request: Request) {
   }
 
   const claudeModel = model === 'opus'
-    ? 'claude-opus-4-5-20251101'
-    : 'claude-sonnet-4-5-20251022'
+    ? 'claude-opus-4-6'
+    : 'claude-sonnet-4-6'
 
   const languageInstruction = sprak === 'Engelska'
     ? 'Write the cover letter in English.'
