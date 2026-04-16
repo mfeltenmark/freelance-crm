@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format, isPast, isToday, addDays, differenceInDays } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { Video, RefreshCw } from 'lucide-react'
+import { Video, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -32,17 +31,8 @@ interface Lead {
   id: string
   title: string
   stage: string
-  source: string | null
   estimatedValue: string | null
   expectedCloseDate: string | null
-  _count?: { activities: number; tasks: number; proposals: number }
-}
-
-interface BookmeLead {
-  id: string
-  title: string
-  source: string | null
-  _count?: { activities: number }
 }
 
 interface StageEntry {
@@ -77,21 +67,9 @@ function formatKr(value: string | number | null | undefined): string {
 
 export default function DashboardPage() {
   const queryClient = useQueryClient()
-  const [polling, setPolling] = useState(false)
   const today = new Date()
   const threeDaysFromNow = addDays(today, 3)
   const thirtyDaysFromNow = addDays(today, 30)
-
-  // Nya mäklarlead: source=bookme, stage=NEW, inga aktiviteter ännu
-  const { data: bookmeData } = useQuery({
-    queryKey: ['bookme-leads'],
-    queryFn: async () => {
-      const res = await fetch('/api/leads?source=bookme&stage=NEW&status=ACTIVE&limit=20')
-      if (!res.ok) throw new Error('Failed to fetch bookme leads')
-      return res.json() as Promise<{ leads: BookmeLead[] }>
-    },
-    refetchInterval: 60000,
-  })
 
   // Dashboard stats (pipeline distribution)
   const { data: dashboardData } = useQuery({
@@ -157,10 +135,6 @@ export default function DashboardPage() {
   })
 
   // Derived data
-  const bookmeLeads: BookmeLead[] = (bookmeData?.leads || []).filter(
-    (l) => (l._count?.activities ?? 0) === 0
-  )
-
   const allTasks: Task[] = tasksData?.tasks || []
   const urgentTasks = allTasks.filter((t) => {
     if (t.priority === 'high') return true
@@ -178,51 +152,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* ── Nya mäklarlead ───────────────────────────────────────────── */}
-      {bookmeLeads.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-gray-900">
-              Nya mäklarlead
-              <span className="ml-2 badge badge-purple">{bookmeLeads.length}</span>
-            </h3>
-            <button
-              onClick={async () => {
-                setPolling(true)
-                try {
-                  await fetch('/api/gmail/poll-trigger', { method: 'POST' })
-                  await queryClient.invalidateQueries({ queryKey: ['bookme-leads'] })
-                } finally {
-                  setPolling(false)
-                }
-              }}
-              disabled={polling}
-              className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              <RefreshCw size={12} className={polling ? 'animate-spin' : ''} />
-              {polling ? 'Hämtar...' : 'Hämta nya leads'}
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {bookmeLeads.map((lead) => (
-              <a
-                key={lead.id}
-                href={`/leads/${lead.id}`}
-                className="card px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors min-h-[48px]"
-              >
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 flex-shrink-0">
-                  Ny
-                </span>
-                <p className="font-medium text-sm text-gray-900 truncate flex-1">{lead.title}</p>
-                {lead.source && (
-                  <span className="text-xs text-gray-400 flex-shrink-0">{lead.source}</span>
-                )}
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* ── Row 1: Urgent tasks + Pipeline ───────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
