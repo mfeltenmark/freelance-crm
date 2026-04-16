@@ -93,6 +93,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [meetingDuration, setMeetingDuration] = useState(30)
   const [meetingNotes, setMeetingNotes] = useState('')
   const [meetingSaving, setMeetingSaving] = useState(false)
+  const [inviteContact, setInviteContact] = useState(true)
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['lead', id],
@@ -245,6 +246,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
     setMeetingTime('09:00')
     setMeetingDuration(30)
     setMeetingNotes('')
+    setInviteContact(true)
     setShowMeetingModal(true)
   }
 
@@ -263,6 +265,8 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           scheduledAt,
           durationMinutes: meetingDuration,
           notes: meetingNotes,
+          inviteContact,
+          contactEmail: lead.contact?.email || null,
         }),
       })
       setShowMeetingModal(false)
@@ -1381,6 +1385,15 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '0.5rem 0.75rem', fontSize: '0.875rem', resize: 'vertical' }}
               />
             </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#374151', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={inviteContact}
+                onChange={e => setInviteContact(e.target.checked)}
+                style={{ width: '1rem', height: '1rem', accentColor: '#0f766e' }}
+              />
+              Bjud in kontakt via Google Calendar
+            </label>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
               <button
                 onClick={() => setShowMeetingModal(false)}

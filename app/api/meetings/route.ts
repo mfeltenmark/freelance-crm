@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { leadId, contactId, title, scheduledAt, durationMinutes, notes } = await request.json()
+    const { leadId, contactId, title, scheduledAt, durationMinutes, notes, inviteContact, contactEmail } = await request.json()
 
     if (!scheduledAt || !title) {
       return NextResponse.json({ error: 'title and scheduledAt are required' }, { status: 400 })
@@ -42,6 +42,9 @@ export async function POST(request: Request) {
           dateTime: endTime.toISOString(),
           timeZone: 'Europe/Stockholm',
         },
+        ...(inviteContact && contactEmail ? {
+          attendees: [{ email: contactEmail }],
+        } : {}),
       },
     })
 
