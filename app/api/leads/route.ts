@@ -28,7 +28,10 @@ export async function GET(request: NextRequest) {
     }
     
     if (status) {
-      if (status !== 'ALL') {
+      if (status === 'ALL') {
+        // Even when showing all, exclude CONTACT leads from the pipeline view
+        where.status = { not: 'CONTACT' }
+      } else {
         where.status = status
       }
     } else {

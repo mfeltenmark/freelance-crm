@@ -135,6 +135,21 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
     },
   })
 
+  const markAsContactMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONTACT' }),
+      })
+      if (!res.ok) throw new Error('Failed to update lead')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead', id] })
+    },
+  })
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' })
@@ -359,7 +374,19 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 <XCircle className="w-4 h-4" />
                 Förlorad
               </button>
+              <button
+                onClick={() => markAsContactMutation.mutate()}
+                disabled={markAsContactMutation.isPending}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Markera som kontakt
+              </button>
             </>
+          )}
+          {lead.status === 'CONTACT' && (
+            <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 bg-gray-100">
+              Kontakt
+            </span>
           )}
           <button
             onClick={() => {

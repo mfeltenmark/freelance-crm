@@ -124,6 +124,12 @@ export async function PATCH(
     // Update lastActivityDate
     updateData.lastActivityDate = new Date()
 
+    // Read current lead before update to detect stage transitions
+    const currentLead = await prisma.lead.findUnique({
+      where: { id },
+      select: { stage: true, expectedCloseDate: true },
+    })
+
     const lead = await prisma.lead.update({
       where: { id },
       data: updateData,
@@ -131,6 +137,44 @@ export async function PATCH(
         company: true,
       },
     })
+
+    // Auto-create preparation task when stage transitions to QUALIFIED
+    const stagingToQualified =
+      updateData.stage === 'QUALIFIED' && currentLead?.stage !== 'QUALIFIED'
+
+    if (stagingToQualified) {
+      const taskTitle = 'Förbered intervju/pitch'
+
+      const existingTask = await prisma.task.findFirst({
+        where: {
+          leadId: id,
+          title: taskTitle,
+          status: { notIn: ['done', 'cancelled'] },
+        },
+      })
+
+      if (!existingTask) {
+        const closeDate = lead.expectedCloseDate ?? currentLead?.expectedCloseDate ?? null
+        let dueDate: Date
+
+        if (closeDate) {
+          dueDate = new Date(closeDate)
+          dueDate.setDate(dueDate.getDate() - 2)
+        } else {
+          dueDate = new Date()
+          dueDate.setDate(dueDate.getDate() + 3)
+        }
+
+        await prisma.task.create({
+          data: {
+            title: taskTitle,
+            leadId: id,
+            dueDate,
+            priority: 'high',
+          },
+        })
+      }
+    }
 
     return NextResponse.json({ lead })
   } catch (error) {
