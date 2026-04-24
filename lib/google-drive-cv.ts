@@ -76,9 +76,9 @@ export async function readAllCVFiles(kravprofil?: string): Promise<string> {
       score: scoreFile(f.name || '', keywords),
     }))
     scored.sort((a, b) => b.score - a.score)
-    selectedFiles = scored.slice(0, 18).map(s => s.file)
+    selectedFiles = scored.slice(0, 10).map(s => s.file)
   } else {
-    selectedFiles = allOtherFiles.slice(0, 18)
+    selectedFiles = allOtherFiles.slice(0, 10)
   }
 
   const filesToRead = profileFile
@@ -92,7 +92,7 @@ export async function readAllCVFiles(kravprofil?: string): Promise<string> {
         const label = file.name?.toLowerCase().includes('profile')
           ? '=== LINKEDIN PROFILE (kronologisk erfarenhetshistorik) ==='
           : `=== ${file.name} ===`
-        return `${label}\n${text.slice(0, 2500)}`
+        return `${label}\n${text.slice(0, 1500)}`
       } catch {
         return ''
       }
