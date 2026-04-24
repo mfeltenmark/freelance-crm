@@ -81,6 +81,7 @@ model Lead {
 
   // Loss tracking
   lostReason          String?     @db.Text
+  closedAt            DateTime?
   
   // Relations
   contactId           String?

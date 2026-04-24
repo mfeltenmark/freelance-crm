@@ -86,6 +86,8 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [emailSending, setEmailSending] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [attachment, setAttachment] = useState<File | null>(null)
+  const [lostModalOpen, setLostModalOpen] = useState(false)
+  const [lostReason, setLostReason] = useState('')
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [meetingTitle, setMeetingTitle] = useState('')
   const [meetingDate, setMeetingDate] = useState('')
@@ -131,6 +133,23 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
       return res.json()
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead', id] })
+    },
+  })
+
+  const markAsLostMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      const res = await fetch(`/api/leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'CLOSED_LOST', status: 'LOST', lostReason: reason }),
+      })
+      if (!res.ok) throw new Error('Failed to update lead')
+      return res.json()
+    },
+    onSuccess: () => {
+      setLostModalOpen(false)
+      setLostReason('')
       queryClient.invalidateQueries({ queryKey: ['lead', id] })
     },
   })
@@ -370,7 +389,10 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 <CheckCircle className="w-4 h-4" />
                 Markera som vunnen
               </button>
-              <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+              <button
+                onClick={() => setLostModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+              >
                 <XCircle className="w-4 h-4" />
                 Förlorad
               </button>
@@ -1434,6 +1456,53 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
                 style={{ padding: '0.5rem 1rem', background: '#0f766e', color: 'white', borderRadius: '6px', fontSize: '0.875rem', border: 'none', cursor: 'pointer', opacity: (meetingSaving || !meetingDate || !meetingTime || !meetingTitle) ? 0.5 : 1 }}
               >
                 {meetingSaving ? 'Bokar...' : 'Boka möte'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lost modal */}
+      {lostModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-lg font-semibold mb-4">Markera som förlorad</h3>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Anledning (valfritt)
+            </label>
+            <select
+              value={lostReason}
+              onChange={e => setLostReason(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2"
+            >
+              <option value="">Välj anledning...</option>
+              <option value="Pris">Pris</option>
+              <option value="Kompetens matchade ej">Kompetens matchade ej</option>
+              <option value="Timing">Timing</option>
+              <option value="Valde annan leverantör">Valde annan leverantör</option>
+              <option value="Ingen respons">Ingen respons</option>
+              <option value="Uppdrag inställt">Uppdrag inställt</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Eller skriv egen anledning..."
+              value={lostReason}
+              onChange={e => setLostReason(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setLostModalOpen(false)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Avbryt
+              </button>
+              <button
+                onClick={() => markAsLostMutation.mutate(lostReason)}
+                disabled={markAsLostMutation.isPending}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                Bekräfta förlorad
               </button>
             </div>
           </div>

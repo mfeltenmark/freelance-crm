@@ -27,24 +27,27 @@ export async function GET(request: NextRequest) {
       where.source = source
     }
     
-    if (status) {
-      if (status === 'ALL') {
-        // Even when showing all, exclude CONTACT leads from the pipeline view
+    if (search) {
+      // Vid sökning: inkludera ACTIVE, WON och LOST (men inte CONTACT)
+      if (!status) {
+        where.status = { in: ['ACTIVE', 'WON', 'LOST'] }
+      } else if (status === 'ALL') {
         where.status = { not: 'CONTACT' }
       } else {
         where.status = status
       }
-    } else {
-      // Default: show only active leads
-      where.status = 'ACTIVE'
-    }
-    
-    if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
         { company: { name: { contains: search, mode: 'insensitive' } } },
       ]
+    } else {
+      if (status === 'ALL') {
+        // Even when showing all, exclude CONTACT leads from the pipeline view
+        where.status = { not: 'CONTACT' }
+      } else {
+        where.status = status || 'ACTIVE'
+      }
     }
 
     // Fetch leads with relations

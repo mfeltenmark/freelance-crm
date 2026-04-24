@@ -100,8 +100,14 @@ export async function PATCH(
     if (stage !== undefined) {
       updateData.stage = stage
       // Auto-sync status when stage changes
-      if (stage === 'CLOSED_WON') updateData.status = 'WON'
-      if (stage === 'CLOSED_LOST') updateData.status = 'LOST'
+      if (stage === 'CLOSED_WON') {
+        updateData.status = 'WON'
+        updateData.closedAt = new Date()
+      }
+      if (stage === 'CLOSED_LOST') {
+        updateData.status = 'LOST'
+        updateData.closedAt = new Date()
+      }
       if (['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATING'].includes(stage)) updateData.status = 'ACTIVE'
     }
     if (status !== undefined) updateData.status = status
@@ -137,6 +143,28 @@ export async function PATCH(
         company: true,
       },
     })
+
+    // Auto-create activity log when stage transitions to WON or LOST
+    if (stage === 'CLOSED_WON' && currentLead?.stage !== 'CLOSED_WON') {
+      await prisma.activity.create({
+        data: {
+          leadId: id,
+          type: 'NOTE',
+          description: 'Uppdraget markerades som vunnet.',
+          activityDate: new Date(),
+        },
+      })
+    }
+    if (stage === 'CLOSED_LOST' && currentLead?.stage !== 'CLOSED_LOST') {
+      await prisma.activity.create({
+        data: {
+          leadId: id,
+          type: 'NOTE',
+          description: body.lostReason ? `Uppdraget markerades som förlorat. Anledning: ${body.lostReason}` : 'Uppdraget markerades som förlorat.',
+          activityDate: new Date(),
+        },
+      })
+    }
 
     // Auto-create preparation task when stage transitions to QUALIFIED
     const stagingToQualified =
