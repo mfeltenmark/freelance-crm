@@ -115,6 +115,8 @@ model Lead {
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
+  projects            Project[]
+
   @@index([stage])
   @@index([status])
   @@index([leadScore])
@@ -416,6 +418,63 @@ model Transcript {
   emailSentAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+// Project & Time Tracking models
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum BillingType {
+  FIXED_PRICE
+  HOURLY
+}
+
+enum PhaseStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model Project {
+  id           String         @id @default(cuid())
+  leadId       String?
+  lead         Lead?          @relation(fields: [leadId], references: [id])
+  name         String
+  description  String?
+  contractUrl  String?
+  status       ProjectStatus  @default(ACTIVE)
+  defaultRate  Float          @default(900)
+  currency     String         @default("SEK")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  phases       ProjectPhase[]
+}
+
+model ProjectPhase {
+  id          String        @id @default(cuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  billingType BillingType
+  fixedAmount Float?
+  hourlyRate  Float?
+  status      PhaseStatus   @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  sessions    TimeSession[]
+}
+
+model TimeSession {
+  id        String       @id @default(cuid())
+  phaseId   String
+  phase     ProjectPhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime?
+  note      String?
+  createdAt DateTime     @default(now())
 }
 
 model MailSignal {

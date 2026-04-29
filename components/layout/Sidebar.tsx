@@ -15,7 +15,8 @@ import {
   X,
   Menu,
   LogOut,
-  FileText
+  FileText,
+  FolderKanban
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut, useSession } from 'next-auth/react'
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Kalender', href: '/calendar', icon: Calendar },
   { name: 'Rapporter', href: '/reports', icon: BarChart3 },
   { name: 'CV-generator', href: '/cv-generator', icon: FileText },
+  { name: 'Projekt', href: '/projects', icon: FolderKanban },
 ]
 
 const bottomNav = [
