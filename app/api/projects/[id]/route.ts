@@ -56,14 +56,15 @@ export async function PATCH(
         ...(body.leadId !== undefined && { leadId: body.leadId || null })
       },
       include: {
-        phases: true,
-        lead: {
-          select: {
-            id: true,
-            title: true,
-            company: { select: { name: true } }
-          }
-        }
+        phases: {
+          include: {
+            sessions: {
+              orderBy: { startTime: 'asc' }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
+        },
+        lead: true
       }
     })
 
