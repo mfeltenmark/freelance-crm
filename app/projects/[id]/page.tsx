@@ -42,6 +42,8 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [showAddPhase, setShowAddPhase] = useState(false)
+  const [editingProject, setEditingProject] = useState(false)
+  const [editingPhase, setEditingPhase] = useState<Phase | null>(null)
 
   const fetchProject = () => {
     fetch(`/api/projects/${id}`)
@@ -93,6 +95,12 @@ export default function ProjectDetailPage() {
           }`}>
             {project.status === 'ACTIVE' ? 'Aktivt' : project.status === 'PAUSED' ? 'Pausat' : 'Avslutat'}
           </span>
+          <button
+            onClick={() => setEditingProject(true)}
+            className="text-xs text-gray-500 hover:text-[#5e3a8c] px-2 py-1"
+          >
+            Redigera
+          </button>
           <button
             onClick={handleDelete}
             className="text-xs text-red-500 hover:text-red-700 px-2 py-1"
@@ -148,6 +156,12 @@ export default function ProjectDetailPage() {
                         <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                           {phase.billingType === 'HOURLY' ? 'Löpande' : 'Fastpris'}
                         </span>
+                        <button
+                          onClick={(e) => { e.preventDefault(); setEditingPhase(phase) }}
+                          className="text-xs text-gray-400 hover:text-[#5e3a8c] px-2 py-1"
+                        >
+                          Redigera
+                        </button>
                       </div>
                       {phase.billingType === 'FIXED_PRICE' && phase.fixedAmount && (
                         <p className="text-sm text-gray-500 mt-0.5">
@@ -184,6 +198,273 @@ export default function ProjectDetailPage() {
           onAdded={() => { fetchProject(); setShowAddPhase(false) }}
         />
       )}
+
+      {editingProject && (
+        <EditProjectModal
+          project={project}
+          onClose={() => setEditingProject(false)}
+          onSaved={(updated) => { setProject(updated); setEditingProject(false) }}
+        />
+      )}
+
+      {editingPhase && (
+        <EditPhaseModal
+          projectId={project.id}
+          phase={editingPhase}
+          onClose={() => setEditingPhase(null)}
+          onSaved={() => { fetchProject(); setEditingPhase(null) }}
+        />
+      )}
+    </div>
+  )
+}
+
+function EditProjectModal({
+  project,
+  onClose,
+  onSaved
+}: {
+  project: Project
+  onClose: () => void
+  onSaved: (p: Project) => void
+}) {
+  const [name, setName] = useState(project.name)
+  const [description, setDescription] = useState(project.description || '')
+  const [contractUrl, setContractUrl] = useState(project.contractUrl || '')
+  const [defaultRate, setDefaultRate] = useState(String(project.defaultRate))
+  const [status, setStatus] = useState(project.status)
+  const [leads, setLeads] = useState<{ id: string; title: string; company?: { name: string } | null }[]>([])
+  const [leadId, setLeadId] = useState(project.lead?.id || '')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/leads')
+      .then(r => r.json())
+      .then(d => setLeads(d.leads || []))
+  }, [])
+
+  const handleSubmit = async () => {
+    if (!name.trim()) return
+    setSaving(true)
+    const res = await fetch(`/api/projects/${project.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        description: description || null,
+        contractUrl: contractUrl || null,
+        leadId: leadId || null,
+        defaultRate: parseFloat(defaultRate) || 900,
+        status
+      })
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (data.project) onSaved(data.project)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <h2 className="text-lg font-semibold mb-4">Redigera projekt</h2>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projektnamn *</label>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Beskrivning</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Avtal/offert (Google Drive-länk)</label>
+            <input
+              value={contractUrl}
+              onChange={e => setContractUrl(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              placeholder="https://drive.google.com/..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Schablonpris kr/tim</label>
+            <input
+              value={defaultRate}
+              onChange={e => setDefaultRate(e.target.value)}
+              type="number"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              value={status}
+              onChange={e => setStatus(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="ACTIVE">Aktivt</option>
+              <option value="PAUSED">Pausat</option>
+              <option value="ARCHIVED">Avslutat</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Kopplat lead (valfritt)</label>
+            <select
+              value={leadId}
+              onChange={e => setLeadId(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="">Inget lead</option>
+              {leads.map(l => (
+                <option key={l.id} value={l.id}>
+                  {l.company?.name || l.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
+          >
+            Avbryt
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || !name.trim()}
+            className="flex-1 px-4 py-2 bg-[#5e3a8c] text-white rounded-lg text-sm font-medium disabled:opacity-50"
+          >
+            {saving ? 'Sparar...' : 'Spara'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EditPhaseModal({
+  projectId,
+  phase,
+  onClose,
+  onSaved
+}: {
+  projectId: string
+  phase: Phase
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [name, setName] = useState(phase.name)
+  const [billingType, setBillingType] = useState<'FIXED_PRICE' | 'HOURLY'>(phase.billingType)
+  const [fixedAmount, setFixedAmount] = useState(phase.fixedAmount ? String(phase.fixedAmount) : '')
+  const [hourlyRate, setHourlyRate] = useState(phase.hourlyRate ? String(phase.hourlyRate) : '')
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!name.trim()) return
+    setSaving(true)
+    await fetch(`/api/projects/${projectId}/phases/${phase.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        fixedAmount: fixedAmount ? parseFloat(fixedAmount) : null,
+        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null
+      })
+    })
+    setSaving(false)
+    onSaved()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <h2 className="text-lg font-semibold mb-4">Redigera fas</h2>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fasnamn *</label>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Faktureringsmodell</label>
+            <div className="flex gap-3">
+              {(['HOURLY', 'FIXED_PRICE'] as const).map(type => (
+                <button
+                  key={type}
+                  onClick={() => setBillingType(type)}
+                  className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    billingType === type
+                      ? 'bg-[#5e3a8c] text-white border-[#5e3a8c]'
+                      : 'border-gray-300 text-gray-700'
+                  }`}
+                >
+                  {type === 'HOURLY' ? 'Löpande' : 'Fastpris'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {billingType === 'FIXED_PRICE' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fakturerat belopp (SEK)</label>
+              <input
+                value={fixedAmount}
+                onChange={e => setFixedAmount(e.target.value)}
+                type="number"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                placeholder="ex. 25000"
+              />
+            </div>
+          )}
+
+          {billingType === 'HOURLY' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Avtalat timpris (SEK)</label>
+              <input
+                value={hourlyRate}
+                onChange={e => setHourlyRate(e.target.value)}
+                type="number"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                placeholder="ex. 1200"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm">
+            Avbryt
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || !name.trim()}
+            className="flex-1 px-4 py-2 bg-[#5e3a8c] text-white rounded-lg text-sm font-medium disabled:opacity-50"
+          >
+            {saving ? 'Sparar...' : 'Spara'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
