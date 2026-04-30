@@ -2,9 +2,22 @@ import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  session: { strategy: 'jwt' },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60,
+  },
   trustHost: true,
   cookies: {
+    sessionToken: {
+      name: 'authjs.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        maxAge: 30 * 24 * 60 * 60,
+      },
+    },
     pkceCodeVerifier: {
       name: 'authjs.pkce.code_verifier',
       options: {
