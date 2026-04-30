@@ -27,27 +27,21 @@ export async function GET(request: NextRequest) {
       where.source = source
     }
     
+    // Resolve status filter – same logic with or without search
+    if (status === 'ALL') {
+      where.status = { not: 'CONTACT' }
+    } else if (status) {
+      where.status = status
+    } else {
+      where.status = 'ACTIVE'
+    }
+
     if (search) {
-      // Vid sökning: inkludera ACTIVE, WON och LOST (men inte CONTACT)
-      if (!status) {
-        where.status = { in: ['ACTIVE', 'WON', 'LOST'] }
-      } else if (status === 'ALL') {
-        where.status = { not: 'CONTACT' }
-      } else {
-        where.status = status
-      }
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
         { company: { name: { contains: search, mode: 'insensitive' } } },
       ]
-    } else {
-      if (status === 'ALL') {
-        // Even when showing all, exclude CONTACT leads from the pipeline view
-        where.status = { not: 'CONTACT' }
-      } else {
-        where.status = status || 'ACTIVE'
-      }
     }
 
     // Fetch leads with relations

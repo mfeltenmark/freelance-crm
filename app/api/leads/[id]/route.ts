@@ -41,6 +41,9 @@ export async function GET(
         proposals: {
           orderBy: { createdAt: 'desc' },
         },
+        projects: {
+          select: { id: true },
+        },
         transcript: true,
       },
     })

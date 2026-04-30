@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url)
+    const status = searchParams.get('status')
+
     const projects = await prisma.project.findMany({
+      where: status ? { status: status as any } : {},
       include: {
         lead: {
           select: {
@@ -14,6 +18,7 @@ export async function GET() {
         },
         phases: {
           include: {
+            sessions: true,
             _count: { select: { sessions: true } }
           }
         }

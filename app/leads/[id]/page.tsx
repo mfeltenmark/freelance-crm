@@ -88,6 +88,8 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
   const [attachment, setAttachment] = useState<File | null>(null)
   const [lostModalOpen, setLostModalOpen] = useState(false)
   const [lostReason, setLostReason] = useState('')
+  const [showCreateProject, setShowCreateProject] = useState(false)
+  const [showReopenDropdown, setShowReopenDropdown] = useState(false)
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [meetingTitle, setMeetingTitle] = useState('')
   const [meetingDate, setMeetingDate] = useState('')
@@ -410,6 +412,38 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               Kontakt
             </span>
           )}
+          {(lead.status === 'WON' || lead.status === 'LOST') && (
+            <div className="relative">
+              <button
+                onClick={() => setShowReopenDropdown(v => !v)}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+              >
+                ↩ Återöppna lead
+              </button>
+              {showReopenDropdown && (
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 py-1">
+                  <p className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase tracking-wider">Flytta till steg</p>
+                  {['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATING'].map(s => (
+                    <button
+                      key={s}
+                      onClick={async () => {
+                        await fetch(`/api/leads/${id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ stage: s, status: 'ACTIVE' }),
+                        })
+                        setShowReopenDropdown(false)
+                        queryClient.invalidateQueries({ queryKey: ['lead', id] })
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      {stageConfig[s]?.label ?? s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <button
             onClick={() => {
               setFollowupTo(lead.contact?.email ?? '')
@@ -451,6 +485,22 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           </button>
         </div>
       </div>
+
+      {/* WON banner – starta projekt */}
+      {lead.status === 'WON' && (!lead.projects || lead.projects.length === 0) && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center justify-between">
+          <div>
+            <p className="font-medium text-green-800">Affären är klar! 🎉</p>
+            <p className="text-sm text-green-600 mt-0.5">Starta ett projekt för {lead.title} för att börja logga tid.</p>
+          </div>
+          <button
+            onClick={() => setShowCreateProject(true)}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+          >
+            Starta projekt
+          </button>
+        </div>
+      )}
 
       {/* Pipeline progress */}
       {lead.status === 'ACTIVE' && (
@@ -1509,6 +1559,19 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
         </div>
       )}
 
+      {/* Create project from lead modal */}
+      {showCreateProject && (
+        <CreateProjectFromLeadModal
+          defaultLeadId={lead.id}
+          defaultName={lead.title}
+          onClose={() => setShowCreateProject(false)}
+          onCreated={() => {
+            setShowCreateProject(false)
+            queryClient.invalidateQueries({ queryKey: ['lead', id] })
+          }}
+        />
+      )}
+
       {/* Delete confirmation */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -1531,6 +1594,107 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function CreateProjectFromLeadModal({
+  defaultLeadId,
+  defaultName,
+  onClose,
+  onCreated,
+}: {
+  defaultLeadId: string
+  defaultName: string
+  onClose: () => void
+  onCreated: () => void
+}) {
+  const [name, setName] = useState(defaultName)
+  const [description, setDescription] = useState('')
+  const [contractUrl, setContractUrl] = useState('')
+  const [defaultRate, setDefaultRate] = useState('900')
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!name.trim()) return
+    setSaving(true)
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        description: description || null,
+        contractUrl: contractUrl || null,
+        leadId: defaultLeadId,
+        defaultRate: parseFloat(defaultRate) || 900,
+      }),
+    })
+    setSaving(false)
+    if (res.ok) onCreated()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <h2 className="text-lg font-semibold mb-4">Starta projekt</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projektnamn *</label>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Beskrivning</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              rows={3}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Avtal/offert (Google Drive-länk)</label>
+            <input
+              value={contractUrl}
+              onChange={e => setContractUrl(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              placeholder="https://drive.google.com/..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Schablonpris kr/tim</label>
+            <input
+              value={defaultRate}
+              onChange={e => setDefaultRate(e.target.value)}
+              type="number"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Kopplat lead</label>
+            <input
+              value={defaultName}
+              disabled
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500"
+            />
+          </div>
+        </div>
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm">
+            Avbryt
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || !name.trim()}
+            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-green-700"
+          >
+            {saving ? 'Skapar...' : 'Skapa projekt'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

@@ -66,7 +66,7 @@ export default function LeadsPage() {
   const [stageFilter, setStageFilter] = useState<string | null>(null)
   const [sourceFilter, setSourceFilter] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showClosed, setShowClosed] = useState(false)
+  const [statusView, setStatusView] = useState<'ACTIVE' | 'WON' | 'ALL'>('ACTIVE')
   const [mailSignalInitialData, setMailSignalInitialData] = useState<{ title?: string; description?: string; from?: string } | undefined>(undefined)
   const [activeMailSignalId, setActiveMailSignalId] = useState<string | undefined>(undefined)
   const searchParams = useSearchParams()
@@ -95,14 +95,14 @@ export default function LeadsPage() {
   }, [searchParams])
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['leads', search, stageFilter, sourceFilter, showClosed],
+    queryKey: ['leads', search, stageFilter, sourceFilter, statusView],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (stageFilter) params.set('stage', stageFilter)
       if (sourceFilter) params.set('source', sourceFilter)
-      if (showClosed) params.set('status', 'ALL')
-      
+      if (statusView !== 'ACTIVE') params.set('status', statusView)
+
       const res = await fetch(`/api/leads?${params}`)
       if (!res.ok) throw new Error('Failed to fetch leads')
       return res.json()
@@ -137,8 +137,8 @@ export default function LeadsPage() {
         </button>
       </div>
 
-      {/* Pipeline overview - desktop only */}
-      <div className="hidden lg:block">
+      {/* Pipeline overview - desktop only, aktiva leads */}
+      <div className={cn('hidden lg:block', statusView !== 'ACTIVE' && '!hidden')}>
         <div className="grid grid-cols-7 gap-2">
         {stages.slice(0, -2).map((stage) => {
           const stats = pipelineStats.find((s: any) => s.stage === stage)
@@ -171,18 +171,21 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {/* Mobile: stage filter chips */}
+      {/* Mobile: status + stage filter chips */}
       <div className="lg:hidden flex gap-2 overflow-x-auto -mx-4 px-4 pb-1">
-        <button
-          onClick={() => setStageFilter(null)}
-          className={cn(
-            'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all',
-            !stageFilter ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200'
-          )}
-        >
-          Alla ({leads.length})
-        </button>
-        {stages.slice(0, -2).map((stage) => {
+        {(['ACTIVE', 'WON', 'ALL'] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => { setStatusView(v); setStageFilter(null) }}
+            className={cn(
+              'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all',
+              statusView === v ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200'
+            )}
+          >
+            {v === 'ACTIVE' ? 'Aktiva' : v === 'WON' ? 'Vunna' : 'Alla'}
+          </button>
+        ))}
+        {statusView === 'ACTIVE' && stages.slice(0, -2).map((stage) => {
           const config = stageConfig[stage]
           const count = pipelineStats.find((s: any) => s.stage === stage)?._count || 0
           if (count === 0) return null
@@ -199,15 +202,6 @@ export default function LeadsPage() {
             </button>
           )
         })}
-        <button
-          onClick={() => setShowClosed(!showClosed)}
-          className={cn(
-            'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all',
-            showClosed ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-400 border-gray-200'
-          )}
-        >
-          {showClosed ? 'Dölja avslutade' : 'Visa avslutade'}
-        </button>
       </div>
 
       {/* Search - desktop always visible, mobile hidden */}
@@ -222,16 +216,24 @@ export default function LeadsPage() {
             className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
           />
         </div>
-        
-        <button
-          onClick={() => setShowClosed(!showClosed)}
-          className={cn(
-            'text-sm font-medium transition-colors',
-            showClosed ? 'text-brand-600' : 'text-gray-400 hover:text-gray-600'
-          )}
-        >
-          {showClosed ? '✓ Visar avslutade' : 'Visa avslutade'}
-        </button>
+
+        {/* Status view toggle */}
+        <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+          {(['ACTIVE', 'WON', 'ALL'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => { setStatusView(v); setStageFilter(null) }}
+              className={cn(
+                'px-3 py-1.5 text-sm font-medium transition-colors',
+                statusView === v
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              )}
+            >
+              {v === 'ACTIVE' ? 'Aktiva' : v === 'WON' ? 'Vunna' : 'Alla'}
+            </button>
+          ))}
+        </div>
 
         <div className="flex gap-2">
           {[
