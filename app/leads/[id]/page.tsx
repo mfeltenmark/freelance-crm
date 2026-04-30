@@ -1532,6 +1532,7 @@ export default function LeadDetailPage({ params }: LeadDetailProps) {
               <option value="Valde annan leverantör">Valde annan leverantör</option>
               <option value="Ingen respons">Ingen respons</option>
               <option value="Uppdrag inställt">Uppdrag inställt</option>
+              <option value="Tackade nej">Tackade nej</option>
             </select>
             <input
               type="text"
